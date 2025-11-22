@@ -4,15 +4,21 @@ from typing import Optional, Literal
 from google.genai.types import GenerateVideosOperation
 
 @dataclass
+class VideoGenerationInput:
+    custom_prompt: str
+    global_context: str
+
+@dataclass
 class VideoJobRequest:
-    starting_image: str
-    context: str
-    prompt: str
+    starting_image: bytes
+    global_context: str
+    custom_prompt: str
 
 @dataclass
 class JobStatus:
     status: Optional[Literal["done", "waiting"]]
     job_start_time: datetime
+    job_end_time: Optional[datetime] = None
     video_url: Optional[str] = None
 
 @dataclass

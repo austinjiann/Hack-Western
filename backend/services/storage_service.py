@@ -1,8 +1,12 @@
+from google.cloud import storage
+from utils.env import settings
+
 class StorageService:
     def __init__(self):
-        pass
+        self.client = storage.Client()
+        self.bucket = self.client.bucket(settings.GOOGLE_CLOUD_BUCKET_NAME)
 
-    async def upload_file(self, bucket_name: str, item_name: str, file_data: bytes):
-        # TODO: Implement actual storage logic (e.g., GCS, S3, local)
-        print(f"Uploading to {bucket_name}/{item_name}, size: {len(file_data)} bytes")
+    async def upload_file(self, item_name: str, file_data: bytes):
+        blob = self.bucket.blob(item_name)
+        blob.upload_from_string(file_data)
         return True

@@ -1,5 +1,5 @@
 from google import genai
-from google.genai.types import GenerateVideosConfig, GenerateVideosOperation
+from google.genai.types import GenerateVideosConfig, GenerateVideosOperation, Image
 from models.job import JobStatus
 from utils.env import settings
 
@@ -12,11 +12,15 @@ class VertexService:
         )
         self.bucket_name = settings.GOOGLE_CLOUD_BUCKET_NAME
 
-    async def generate_video_content(self, prompt: str, image_data: bytes = None):
+    async def generate_video_content(self, prompt: str, image_data: bytes = None) -> GenerateVideosOperation:
         # gen vid
         operation = self.client.models.generate_videos(
             model="veo-3.1-fast-generate-001",
-            prompt="a cat reading a book",
+            prompt=prompt,
+            image=Image(
+                image_bytes=image_data,
+                mime_type="image/png",
+            ),
             config=GenerateVideosConfig(
                 aspect_ratio="16:9",
                 output_gcs_uri=f"gs://{self.bucket_name}/videos/",
