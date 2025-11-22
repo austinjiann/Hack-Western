@@ -69,7 +69,7 @@ class Jobs(APIController):
         #just return random stuff
         return json({"job_id": "mock-job-id"})
 
-    @get("/video/mock/{job_id}")
+    @get("/video/{job_id}")
     async def get_video_job_status_mock(self, job_id: str):
         return json({
             "status": "done",

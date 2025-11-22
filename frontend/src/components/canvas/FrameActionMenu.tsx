@@ -183,7 +183,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         formData.append("files", blob)
 
         try {
-            const response = await fetch(`${backend_url}/api/jobs/video/mock`,{
+            const response = await fetch(`${backend_url}/api/jobs/video`,{
                 method: "POST",
                 body: formData
             });

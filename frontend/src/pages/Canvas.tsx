@@ -9,7 +9,7 @@ const customShapeUtils = [FrameShapeUtil, GlobalContextFrameShapeUtil];
 
 
 export default function Canvas() {
-  const { handleMount, handleImport, handleClear, createGlobalContextFrame } = useCanvas();
+  const { handleMount, handleImport, handleClear, createGlobalContextFrame, editorRef } = useCanvas();
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
@@ -25,6 +25,7 @@ export default function Canvas() {
         onClear={handleClear}
         onImport={handleImport}
         onCreateGlobalContextFrame={createGlobalContextFrame}
+        editorRef={editorRef}
       />
     </div>
   );

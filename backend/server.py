@@ -17,6 +17,9 @@ services.add_instance(job_service, JobService)
 
 app = Application(services=services)
 
+# Register controllers
+app.use_controllers(Jobs)
+
 # TODO: REMOVE IN PRODUCTION, FOR DEV ONLY
 app.use_cors(
     allow_methods="*",

@@ -11,17 +11,8 @@ interface VideoPlayerProps {
 	currentTime: number;
 	/** Playback speed multiplier (1.0 = normal, 2.0 = 2x speed) */
 	playbackRate: number;
-	/** Optional trim start time in seconds (for client-side trimming) */
-	trimStart?: number;
 	/** Optional trim end time in seconds (for client-side trimming) */
 	trimEnd?: number;
-	/** Optional crop settings (for visual cropping) */
-	crop?: {
-		x: number; // 0-1, left position
-		y: number; // 0-1, top position
-		width: number; // 0-1, crop width
-		height: number; // 0-1, crop height
-	};
 	/** Callback when play/pause state changes */
 	onPlayPauseChange: (isPlaying: boolean) => void;
 	/** Callback when current time changes (fires frequently during playback) */
@@ -41,9 +32,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 	isPlaying,
 	currentTime,
 	playbackRate,
-	trimStart,
 	trimEnd,
-	crop,
 	onPlayPauseChange,
 	onTimeUpdate,
 	onDurationChange,
@@ -78,29 +67,43 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 		}
 	}, [isPlaying, onPlayPauseChange]);
 
-	// Sync currentTime with video element (accounts for trim and speed)
+	// Sync currentTime with video element (accounts for trim end and speed)
 	useEffect(() => {
 		const video = videoRef.current;
 		if (!video || !isLoaded) return;
 
 		let actualVideoTime = currentTime * playbackRate;
-		if (trimStart !== undefined) {
-			actualVideoTime = actualVideoTime + trimStart;
-		}
 		
-		let targetTime = actualVideoTime;
-		if (trimStart !== undefined) {
-			targetTime = Math.max(trimStart, actualVideoTime);
-		}
+		// Clamp to trim end if specified (this is the effective duration)
 		if (trimEnd !== undefined) {
-			targetTime = Math.min(trimEnd, targetTime);
+			actualVideoTime = Math.min(trimEnd, actualVideoTime);
 		}
 
-		const timeDifference = Math.abs(video.currentTime - targetTime);
+		// Also clamp to video duration to prevent seeking beyond video
+		actualVideoTime = Math.min(video.duration, actualVideoTime);
+
+		const timeDifference = Math.abs(video.currentTime - actualVideoTime);
 		if (timeDifference > 0.1) {
-			video.currentTime = targetTime;
+			video.currentTime = actualVideoTime;
 		}
-	}, [currentTime, isLoaded, trimStart, trimEnd]);
+	}, [currentTime, isLoaded, trimEnd, playbackRate]);
+	
+	// Ensure video stops at trimEnd
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video || !isLoaded || !trimEnd) return;
+		
+		const checkTrimEnd = () => {
+			if (video.currentTime >= trimEnd) {
+				video.pause();
+				video.currentTime = trimEnd;
+				onPlayPauseChange(false);
+			}
+		};
+		
+		video.addEventListener('timeupdate', checkTrimEnd);
+		return () => video.removeEventListener('timeupdate', checkTrimEnd);
+	}, [isLoaded, trimEnd, onPlayPauseChange]);
 
 	// Sync playbackRate with video element
 	useEffect(() => {
@@ -115,35 +118,46 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 		if (!video) return;
 
 		setIsLoaded(true);
-		onDurationChange(video.duration);
+		// Report effective duration (trimEnd if specified, otherwise full duration)
+		// This ensures the UI shows the correct duration
+		const effectiveDuration = trimEnd !== undefined ? trimEnd : video.duration;
+		onDurationChange(effectiveDuration);
 		onLoaded?.();
 	};
+	
+	// Update duration when trimEnd changes
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video || !isLoaded) return;
+		
+		const effectiveDuration = trimEnd !== undefined ? trimEnd : video.duration;
+		onDurationChange(effectiveDuration);
+	}, [trimEnd, isLoaded, onDurationChange]);
 
-	// Handle time update (convert to effective time, account for trim and speed)
+	// Handle time update (convert to effective time, account for trim end and speed)
 	const handleTimeUpdate = () => {
 		const video = videoRef.current;
 		if (!video) return;
 
-		const actualTime = video.currentTime;
+		let actualTime = video.currentTime;
 		
-		if (trimEnd !== undefined && actualTime >= trimEnd) {
-			video.pause();
-			onPlayPauseChange(false);
-			let effectiveTime = trimEnd;
-			if (trimStart !== undefined) {
-				effectiveTime = trimEnd - trimStart;
+		// Clamp to trim end if specified
+		if (trimEnd !== undefined) {
+			if (actualTime >= trimEnd) {
+				video.pause();
+				onPlayPauseChange(false);
+				actualTime = trimEnd; // Clamp to trim end
+				// Report the effective time (which is trimEnd / playbackRate)
+				const effectiveTime = trimEnd / playbackRate;
+				onTimeUpdate(effectiveTime);
+				return;
 			}
-			effectiveTime = effectiveTime / playbackRate;
-			onTimeUpdate(effectiveTime);
-			return;
 		}
 
-		let effectiveTime = actualTime;
-		if (trimStart !== undefined) {
-			effectiveTime = actualTime - trimStart;
-		}
-		effectiveTime = effectiveTime / playbackRate;
-		
+		// Convert to effective time (accounting for speed)
+		// The effective time is just the actual time divided by playback rate
+		// Since we're trimming from the start, the effective time equals actual time
+		const effectiveTime = actualTime / playbackRate;
 		onTimeUpdate(Math.max(0, effectiveTime));
 	};
 
@@ -163,31 +177,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 		}
 	};
 
-	// Calculate crop style (clip-path and transform)
-	const getCropStyle = () => {
-		if (!crop) return {};
-		
-		const top = crop.y * 100;
-		const right = (1 - (crop.x + crop.width)) * 100;
-		const bottom = (1 - (crop.y + crop.height)) * 100;
-		const left = crop.x * 100;
-		
-		const scale = 1 / Math.min(crop.width, crop.height);
-		const cropCenterX = crop.x + crop.width / 2;
-		const cropCenterY = crop.y + crop.height / 2;
-		const translateX = (0.5 - cropCenterX) * 100;
-		const translateY = (0.5 - cropCenterY) * 100;
-		
-		return {
-			clipPath: `inset(${top}% ${right}% ${bottom}% ${left}%)`,
-			objectFit: 'cover' as const,
-			transform: `scale(${scale}) translate(${translateX}%, ${translateY}%)`,
-			transformOrigin: 'center center',
-			width: '100%',
-			height: '100%',
-		};
-	};
-
 	return (
 		<div className={`video-player ${className}`}>
 			<video
@@ -197,7 +186,11 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 				controls={false}
 				preload="metadata"
 				crossOrigin="anonymous"
-				style={getCropStyle()}
+				style={{
+					width: '100%',
+					height: '100%',
+					objectFit: 'contain',
+				}}
 				onLoadedMetadata={handleLoadedMetadata}
 				onTimeUpdate={handleTimeUpdate}
 				onPlay={handlePlay}

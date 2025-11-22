@@ -10,14 +10,12 @@ interface TimelineProps {
 	duration: number;
 	/** Callback when user seeks to a new time (click or drag) */
 	onSeek: (time: number) => void;
-	/** Optional trim start time (for visual indicator) */
-	trimStart?: number;
 	/** Optional trim end time (for visual indicator) */
 	trimEnd?: number;
-	/** Whether trim mode is active (clicking sets trim points) */
+	/** Whether trim mode is active (clicking sets trim end) */
 	isTrimMode?: boolean;
-	/** Callback when trim point is set (in trim mode) */
-	onTrimPointSet?: (time: number, type: 'start' | 'end') => void;
+	/** Callback when trim end is set (in trim mode) */
+	onTrimPointSet?: (time: number) => void;
 	/** Optional className for custom styling */
 	className?: string;
 }
@@ -33,7 +31,6 @@ const Timeline: FC<TimelineProps> = ({
 	currentTime,
 	duration,
 	onSeek,
-	trimStart,
 	trimEnd,
 	isTrimMode = false,
 	onTrimPointSet,
@@ -81,7 +78,7 @@ const Timeline: FC<TimelineProps> = ({
 		setIsDragging(true);
 	};
 
-	// Handle timeline click (seek or set trim point)
+	// Handle timeline click (seek or set trim end)
 	const handleTimelineClick = (e: React.MouseEvent) => {
 		if ((e.target as HTMLElement).classList.contains('timeline-playhead')) {
 			return;
@@ -90,22 +87,8 @@ const Timeline: FC<TimelineProps> = ({
 		const time = getTimeFromPosition(e.clientX);
 		
 		if (isTrimMode && onTrimPointSet) {
-			// Set trim start or end based on click position
-			if (trimStart === undefined) {
-				onTrimPointSet(time, 'start');
-			} else if (trimEnd === undefined) {
-				onTrimPointSet(time, time < trimStart ? 'start' : 'end');
-			} else {
-				if (time < trimStart) {
-					onTrimPointSet(time, 'start');
-				} else if (time > trimEnd) {
-					onTrimPointSet(time, 'end');
-				} else {
-					const distToStart = Math.abs(time - trimStart);
-					const distToEnd = Math.abs(time - trimEnd);
-					onTrimPointSet(time, distToStart < distToEnd ? 'start' : 'end');
-				}
-			}
+			// Set trim end only
+			onTrimPointSet(time);
 		} else {
 			onSeek(time);
 		}
@@ -134,7 +117,6 @@ const Timeline: FC<TimelineProps> = ({
 	}, [isDragging, onSeek, duration]);
 
 	// Calculate trim indicator positions
-	const trimStartPosition = trimStart !== undefined ? (trimStart / duration) * 100 : null;
 	const trimEndPosition = trimEnd !== undefined ? (trimEnd / duration) * 100 : null;
 
 	return (
@@ -144,34 +126,23 @@ const Timeline: FC<TimelineProps> = ({
 			onClick={handleTimelineClick}
 		>
 			<div className="timeline-track">
-				{trimStartPosition !== null && trimEndPosition !== null && (
-					<div
-						className="timeline-trim-region"
-						style={{
-							left: `${trimStartPosition}%`,
-							width: `${trimEndPosition - trimStartPosition}%`,
-						}}
-					/>
-				)}
-
-				{trimStartPosition !== null && (
-					<div
-						className="timeline-trim-marker timeline-trim-start"
-						style={{ left: `${trimStartPosition}%` }}
-					>
-						<div className="timeline-trim-handle" />
-						<div className="timeline-trim-label">Start</div>
-					</div>
-				)}
-
 				{trimEndPosition !== null && (
-					<div
-						className="timeline-trim-marker timeline-trim-end"
-						style={{ left: `${trimEndPosition}%` }}
-					>
-						<div className="timeline-trim-handle" />
-						<div className="timeline-trim-label">End</div>
-					</div>
+					<>
+						<div
+							className="timeline-trim-region"
+							style={{
+								left: '0%',
+								width: `${trimEndPosition}%`,
+							}}
+						/>
+						<div
+							className="timeline-trim-marker timeline-trim-end"
+							style={{ left: `${trimEndPosition}%` }}
+						>
+							<div className="timeline-trim-handle" />
+							<div className="timeline-trim-label">End</div>
+						</div>
+					</>
 				)}
 
 				<div

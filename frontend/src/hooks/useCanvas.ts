@@ -343,5 +343,6 @@ export const useCanvas = () => {
     handleImport,
     handleClear,
     createGlobalContextFrame,
+    editorRef, // Expose editor ref for components outside Tldraw context
   };
 };

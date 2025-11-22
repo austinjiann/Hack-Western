@@ -38,6 +38,8 @@ export const ArrowActionMenu = () => {
       const videoUrl = shape.meta?.videoUrl as string | null;
       const status = shape.meta?.status as string | undefined;
       const timer = shape.meta?.timer as number | undefined;
+      const duration = shape.meta?.duration as number | undefined;
+      const trimEnd = shape.meta?.trimEnd as number | undefined;
 
       return { 
         id: shapeId, 
@@ -48,6 +50,8 @@ export const ArrowActionMenu = () => {
         videoUrl,
         status,
         timer,
+        duration,
+        trimEnd,
       };
     },
     [editor]
@@ -223,10 +227,31 @@ export const ArrowActionMenu = () => {
           isOpen={isOpen}
           videoClip={{
             id: info.id,
-            videoUrl: info.videoUrl,
-            duration: 5,
+            videoUrl: info.videoUrl || '',
+            duration: info.duration || 5,
+            trimEnd: info.trimEnd,
           }}
           onClose={() => setIsOpen(false)}
+          onTrim={(_clipId, endTime, newVideoUrl) => {
+            // Update arrow meta with new trim end and video URL if provided
+            const arrow = editor.getShape(info.id);
+            if (arrow) {
+              editor.updateShapes([{
+                id: info.id,
+                type: 'arrow',
+                meta: {
+                  ...arrow.meta,
+                  trimEnd: endTime,
+                  videoUrl: newVideoUrl || info.videoUrl || '', // Use new URL if provided, otherwise keep existing
+                  duration: endTime, // Update duration to trimmed length
+                }
+              }]);
+            }
+          }}
+          onDelete={() => {
+            editor.deleteShapes([info.id]);
+            setIsOpen(false);
+          }}
         />,
         document.body
       )}
