@@ -2,8 +2,6 @@ from blacksheep import Application
 from services.storage_service import StorageService
 from services.vertex_service import VertexService
 from services.job_service import JobService
-from controllers.files import Files
-from controllers.jobs import Jobs
 from rodi import Container
 
 services = Container()
@@ -24,8 +22,6 @@ app.use_cors(
     allow_origins="*",
     allow_headers="*",
 )
-
-app.use_controllers()
 
 for route in app.router:
     print(f"a")
