@@ -10,40 +10,44 @@ import {
     resizeBox,
     TLShape,
 } from 'tldraw'
-import { FrameActionMenu } from '../components/canvas/FrameActionMenu'
+import { GlobalContextFrameActionMenu } from '../components/canvas/GlobalContextFrameActionMenu'
 
-export type IFrameShape = TLBaseShape<
-	'aspect-frame',
+export type IGlobalContextFrameShape = TLBaseShape<
+	'global-context-frame',
 	{
 		w: number
 		h: number
-		name?: string
+		title?: string
 		backgroundColor?: string
 		opacity?: number
+		summary?: string // Legacy property for migration
+		characters?: string // Legacy property for migration
 	}
 >
 
-export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
-	static override type = 'aspect-frame' as const
-	static override props: RecordProps<IFrameShape> = {
+export class GlobalContextFrameShapeUtil extends BaseBoxShapeUtil<IGlobalContextFrameShape> {
+	static override type = 'global-context-frame' as const
+	static override props: RecordProps<IGlobalContextFrameShape> = {
 		w: T.number,
 		h: T.number,
-		name: T.string.optional(),
+		title: T.string.optional(),
 		backgroundColor: T.string.optional(),
 		opacity: T.number.optional(),
+		summary: T.string.optional(), // Legacy property for migration
+		characters: T.string.optional(), // Legacy property for migration
 	}
 
-	override getDefaultProps(): IFrameShape['props'] {
+	override getDefaultProps(): IGlobalContextFrameShape['props'] {
 		return {
-			w: 960,
-			h: 540,
-			name: '16:9 Frame',
-			backgroundColor: '#ffffff',
+			w: 2000,
+			h: 2400,
+			title: 'Global Context Frame',
+			backgroundColor: '#f8f9fa',
 			opacity: 1,
 		}
 	}
 
-	override getGeometry(shape: IFrameShape): Geometry2d {
+	override getGeometry(shape: IGlobalContextFrameShape): Geometry2d {
 		return new Rectangle2d({
 			width: shape.props.w,
 			height: shape.props.h,
@@ -51,7 +55,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 		})
 	}
 
-	override component(shape: IFrameShape) {
+	override component(shape: IGlobalContextFrameShape) {
 		const opacity = shape.props.opacity ?? 1;
 		return (
 			<HTMLContainer
@@ -73,12 +77,12 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    backgroundColor: shape.props.backgroundColor || '#ffffff',
+                    backgroundColor: shape.props.backgroundColor || '#f8f9fa',
                     opacity: opacity,
                     pointerEvents: 'none',
                 }} />
                 
-                {/* Title - always fully opaque */}
+                {/* Title - always fully opaque, fixed name */}
                 <div style={{
                     position: 'absolute',
                     top: -24,
@@ -93,57 +97,33 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     zIndex: 10,
                     opacity: 1, // Explicitly set to 1 to override any inherited opacity
                 }}>
-                    {shape.props.name || '16:9 Frame'}
+                    {shape.props.title || 'Global Context Frame'}
                 </div>
                 
                 {/* Toolbar - always fully opaque */}
                 <div style={{ position: 'relative', zIndex: 10, opacity: 1 }}>
-                    <FrameActionMenu shapeId={shape.id} />
+                    <GlobalContextFrameActionMenu shapeId={shape.id} />
                 </div>
 			</HTMLContainer>
 		)
 	}
 
-	override indicator(shape: IFrameShape) {
+	override indicator(shape: IGlobalContextFrameShape) {
 		return <rect width={shape.props.w} height={shape.props.h} />
 	}
     
-    override onResize(shape: IFrameShape, info: TLResizeInfo<IFrameShape>) {
+    override onResize(shape: IGlobalContextFrameShape, info: TLResizeInfo<IGlobalContextFrameShape>) {
         const resized = resizeBox(shape, info)
-        const { w: newW, h: newH } = resized.props
-        
-        const ratio = 16 / 9
-        
-        const isVertical = info.handle === 'top' || info.handle === 'bottom'
-        const isHorizontal = info.handle === 'left' || info.handle === 'right'
-        
-        if (isVertical) {
-            // Height changed, update width
-            return {
-                ...resized,
-                props: { ...resized.props, w: newH * ratio }
-            }
-        } else if (isHorizontal) {
-            // Width changed, update height
-            return {
-                ...resized,
-                props: { ...resized.props, h: newW / ratio }
-            }
-        } else {
-            // Corner - use width as master
-            return {
-                ...resized,
-                props: { ...resized.props, h: newW / ratio }
-            }
-        }
+        return resized
     }
 
-	override canReceiveNewChildrenOfType(_shape: IFrameShape, type: TLShape['type']) {
-		return type !== 'aspect-frame'
+	override canReceiveNewChildrenOfType(_shape: IGlobalContextFrameShape, type: TLShape['type']) {
+		// Allow text and images, but not other frames
+		return type !== 'aspect-frame' && type !== 'global-context-frame'
 	}
 
-	override onDropShapesOver(shape: IFrameShape, shapes: TLShape[]) {
-        const shapesToReparent = shapes.filter(s => s.type !== 'aspect-frame');
+	override onDropShapesOver(shape: IGlobalContextFrameShape, shapes: TLShape[]) {
+        const shapesToReparent = shapes.filter(s => s.type !== 'aspect-frame' && s.type !== 'global-context-frame');
         if (shapesToReparent.length === 0) return;
 		this.editor.reparentShapes(
 			shapesToReparent,
@@ -151,7 +131,8 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 		)
 	}
 
-    override canResizeChildren(_shape: IFrameShape) {
+    override canResizeChildren(_shape: IGlobalContextFrameShape) {
         return true
     }
 }
+

@@ -3,12 +3,13 @@ import "tldraw/tldraw.css";
 import { useCanvas } from "../hooks/useCanvas";
 import { CanvasToolbar } from "../components/canvas/CanvasToolbar";
 import { FrameShapeUtil } from "../shapes/FrameShape";
+import { GlobalContextFrameShapeUtil } from "../shapes/GlobalContextFrameShape";
 import { ArrowActionMenu } from "../components/canvas/ArrowActionMenu";
+const customShapeUtils = [FrameShapeUtil, GlobalContextFrameShapeUtil];
 
-const customShapeUtils = [FrameShapeUtil];
 
 export default function Canvas() {
-  const { handleMount, handleImport, handleClear } = useCanvas();
+  const { handleMount, handleImport, handleClear, createGlobalContextFrame } = useCanvas();
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
@@ -22,6 +23,7 @@ export default function Canvas() {
       <CanvasToolbar
         onClear={handleClear}
         onImport={handleImport}
+        onCreateGlobalContextFrame={createGlobalContextFrame}
       />
     </div>
   );

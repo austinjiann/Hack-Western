@@ -1,15 +1,17 @@
 import React from "react";
 import { Button, Flex, Tooltip } from "@radix-ui/themes";
-import { Eraser, Image as ImageIcon } from "lucide-react";
+import { Eraser, Image as ImageIcon, FileText } from "lucide-react";
 
 interface CanvasToolbarProps {
   onClear: () => void;
   onImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCreateGlobalContextFrame: () => void;
 }
 
 export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onClear,
   onImport,
+  onCreateGlobalContextFrame,
 }) => {
   return (
     <div
@@ -45,6 +47,13 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                     }}
                     onChange={onImport}
                 />
+            </Button>
+        </Tooltip>
+
+        <Tooltip content="Create Global Context Frame">
+            <Button variant="soft" color="blue" onClick={onCreateGlobalContextFrame} style={{ cursor: 'pointer' }}>
+                <FileText size={16} />
+                Global Context
             </Button>
         </Tooltip>
       </Flex>

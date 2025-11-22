@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef } from "react";
 import {
   Editor,
   TLShapePartial,
@@ -38,6 +38,8 @@ export const useCanvas = () => {
       props: {
         w: FRAME_WIDTH,
         h: FRAME_HEIGHT,
+        name: "16:9 Frame",
+        backgroundColor: "#ffffff",
       },
     };
 
@@ -136,6 +138,46 @@ export const useCanvas = () => {
     } else {
         // Sync ref with existing frames
         frameIdsRef.current = existingFrames.map(s => s.id);
+        
+        // Migration: Update existing frames to include new properties if missing
+        const framesToUpdate = existingFrames.filter(frame => {
+            const props = frame.props as any;
+            return !props.name || !props.backgroundColor || props.opacity === undefined;
+        });
+        
+        if (framesToUpdate.length > 0) {
+            editor.updateShapes(
+                framesToUpdate.map(frame => ({
+                    id: frame.id,
+                    type: 'aspect-frame' as const,
+                    props: {
+                        ...frame.props,
+                        name: (frame.props as any).name || '16:9 Frame',
+                        backgroundColor: (frame.props as any).backgroundColor || '#ffffff',
+                        opacity: (frame.props as any).opacity ?? 1,
+                    },
+                }))
+            );
+        }
+    }
+
+    // Create global context frame on load if it doesn't exist
+    const existingGCF = editor.getCurrentPageShapes().find(s => s.type === 'global-context-frame');
+    if (!existingGCF) {
+        const shapeId = createShapeId();
+        const shape: TLShapePartial = {
+            id: shapeId,
+            type: "global-context-frame",
+            x: -100,
+            y: 100,
+            props: {
+                w: 2000,
+                h: 2400,
+                title: "Global Context Frame",
+                backgroundColor: "#f8f9fa",
+            },
+        };
+        editor.createShapes([shape]);
     }
 
     // Register side effect to prevent frame overlap
@@ -238,9 +280,48 @@ export const useCanvas = () => {
     
   }, [createFrame]);
 
+  const createGlobalContextFrame = useCallback((position?: { x: number; y: number }) => {
+    if (!editorRef.current) return;
+    const editor = editorRef.current;
+    
+    // Check if a global context frame already exists
+    const existingGCF = editor.getCurrentPageShapes().find(s => s.type === 'global-context-frame');
+    if (existingGCF) {
+      // If one exists, select it and zoom to it instead of creating a new one
+      editor.select(existingGCF.id);
+      editor.zoomToBounds(editor.getShapePageBounds(existingGCF.id)!, { animation: { duration: 200 } });
+      return existingGCF.id;
+    }
+    
+    const shapeId = createShapeId();
+
+    const x = position?.x ?? 100;
+    const y = position?.y ?? 100;
+
+    const shape: TLShapePartial = {
+      id: shapeId,
+      type: "global-context-frame",
+      x,
+      y,
+      props: {
+        w: 2000,
+        h: 2400,
+        title: "Global Context Frame",
+        backgroundColor: "#f8f9fa",
+      },
+    };
+
+    editor.createShapes([shape]);
+    editor.select(shapeId);
+    editor.zoomToBounds(editor.getShapePageBounds(shapeId)!, { animation: { duration: 200 } });
+
+    return shapeId;
+  }, []);
+
   return {
     handleMount,
     handleImport,
     handleClear,
+    createGlobalContextFrame,
   };
 };
