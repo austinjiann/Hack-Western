@@ -1,7 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
 @import url('tldraw/tldraw.css');
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Ananda';
+  src: url('./assets/fonts/AnandaBlackPersonalUseRegular-rg9Rx.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@theme {
+  --color-lightBeige: #f8f6ee;
+  --color-lighterBeige: #f8f6eecc;
+  --color-midBeige1: #ded5c2;
+  --color-midBeige2: #cec9b5;
+  --color-midBeige3: #838074;
+  --color-darkBeige1: #5d5a51;
+  --color-darkBeige2: #3d3b35;
+  --color-darkBeige3: #201f1a;
+
+  /* FlowBoard Brand Colors */
+  --color-brand-indigo: #4f46e5;
+  --color-brand-purple: #9333ea;
+  --color-brand-pink: #db2777;
+  
+  /* Gradients */
+  --image-gradient-hero: linear-gradient(to right, var(--color-brand-indigo), var(--color-brand-purple), var(--color-brand-pink));
+  --image-gradient-logo: linear-gradient(to bottom right, var(--color-brand-indigo), var(--color-brand-purple));
+  --image-grid-pattern: linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px);
+}
+
+@layer components {
+  .border-r {
+    @apply border border-red-500;
+  }
+}
+
 
 body {
-	font-family: 'Inter', sans-serif;
-	overscroll-behavior: none;
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
 }
