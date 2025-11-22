@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
-import { NavItem } from '../types';
+import { NavItem } from '../../types/types';
 
 const navItems: NavItem[] = [];
 

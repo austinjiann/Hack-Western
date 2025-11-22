@@ -10,21 +10,9 @@
 }
 
 @theme {
-  --color-lightBeige: #f8f6ee;
-  --color-lighterBeige: #f8f6eecc;
-  --color-midBeige1: #ded5c2;
-  --color-midBeige2: #cec9b5;
-  --color-midBeige3: #838074;
-  --color-darkBeige1: #5d5a51;
-  --color-darkBeige2: #3d3b35;
-  --color-darkBeige3: #201f1a;
-
-  /* FlowBoard Brand Colors */
   --color-brand-indigo: #4f46e5;
   --color-brand-purple: #9333ea;
   --color-brand-pink: #db2777;
-  
-  /* Gradients */
   --image-gradient-hero: linear-gradient(to right, var(--color-brand-indigo), var(--color-brand-purple), var(--color-brand-pink));
   --image-gradient-logo: linear-gradient(to bottom right, var(--color-brand-indigo), var(--color-brand-purple));
   --image-grid-pattern: linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px);
