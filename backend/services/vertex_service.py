@@ -23,6 +23,7 @@ class VertexService:
             ),
             config=GenerateVideosConfig(
                 aspect_ratio="16:9",
+                duration_seconds=6,
                 output_gcs_uri=f"gs://{self.bucket_name}/videos/",
             ),
         )

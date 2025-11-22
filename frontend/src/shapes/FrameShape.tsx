@@ -65,11 +65,32 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     position: 'relative',
                     opacity: 1, // Explicitly set to 1 to prevent tldraw from applying opacity
 				}}
-				onClick={() => {
-					// Select frame on any click within it
-					this.editor.select(shape.id);
-				}}
 			>
+                {/* Click capture layer - sits behind children but captures clicks */}
+                <div 
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 0,
+                        pointerEvents: 'all',
+                        cursor: 'pointer',
+                    }}
+                    onClick={(e) => {
+                        // Only handle clicks that didn't originate from children
+                        if (e.target === e.currentTarget) {
+                            this.editor.select(shape.id);
+                        }
+                    }}
+                    onPointerDown={(e) => {
+                        // Don't stop propagation - let clicks through to children
+                        // But capture the click for selection purposes
+                        this.editor.select(shape.id);
+                    }}
+                />
+
                 {/* Background layer with opacity */}
                 <div style={{
                     position: 'absolute',
@@ -80,6 +101,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     backgroundColor: shape.props.backgroundColor || '#ffffff',
                     opacity: opacity,
                     pointerEvents: 'none',
+                    zIndex: 1,
                 }} />
                 
                 {/* Title - always fully opaque */}

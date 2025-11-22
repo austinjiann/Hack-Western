@@ -16,7 +16,7 @@ export const VideoGenerationManager = () => {
                 const backend_url = import.meta.env.VITE_BACKEND_URL || "";
                 
                 try {
-                    const response = await fetch(`${backend_url}/api/jobs/video/mock/${jobId}`)
+                    const response = await fetch(`${backend_url}/api/jobs/video/${jobId}`)
                     if (!response.ok) continue
 
                     const data = await response.json()
