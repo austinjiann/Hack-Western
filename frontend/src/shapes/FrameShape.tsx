@@ -87,7 +87,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     color: 'white',
                     padding: '2px 8px',
                     borderRadius: '4px 4px 0 0',
-                    fontSize: 12,
+                    fontSize: 18,
                     fontWeight: 'bold',
                     fontFamily: 'Inter, sans-serif',
                     zIndex: 10,
