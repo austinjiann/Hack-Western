@@ -136,6 +136,8 @@ export default function Canvas() {
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
+      <Tldraw onMount={handleMount} />
+
       {/* Buttons */}
       <div
         style={{
@@ -171,10 +173,13 @@ export default function Canvas() {
         </label>
       </div>
 
-      {/* Slide-down Dimensions */}
-      {showDimensions && <DimensionSelect onSelect={handleSelectDimensions} />}
-
-      <Tldraw onMount={handleMount} />
+      {/* Slide-down Dimensions - Rendered LAST to be on top */}
+      {showDimensions && (
+        <DimensionSelect
+          onSelect={handleSelectDimensions}
+          onClose={() => setShowDimensions(false)}
+        />
+      )}
     </div>
   );
 }
