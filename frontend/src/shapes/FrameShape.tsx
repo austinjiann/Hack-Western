@@ -52,7 +52,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     height: '100%',
                     boxSizing: 'border-box',
                     pointerEvents: 'all',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    backgroundColor: '#ffffff',
 				}}
 			>
                 <div style={{

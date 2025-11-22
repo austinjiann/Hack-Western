@@ -12,9 +12,18 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         [editor, shapeId]
     )
 
-    if (!isSelected ) return null
+    const hasOutgoingArrow = useValue(
+        'has outgoing arrow',
+        () => {
+            const bindings = editor.getBindingsInvolvingShape(shapeId);
+            return bindings.some(b => b.type === 'arrow' && b.toId === shapeId && (b.props as any).terminal === 'start');
+        },
+        [editor, shapeId]
+    );
 
-    const handleGenerate = (e: React.MouseEvent) => {
+    if (!isSelected || hasOutgoingArrow) return null
+
+    const handleGenerate = async (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent deselecting the frame
         
         const currentFrame = editor.getShape(shapeId);
@@ -94,6 +103,27 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         
         // Center view on the new frame
         editor.zoomToBounds(editor.getShapePageBounds(newFrameId)!, { animation: { duration: 200 } });
+
+        // Save screenshot of the current frame
+        try {
+            const { blob } = await editor.toImage([shapeId], {
+                format: 'png',
+                scale: 1,
+                background: true,
+                padding: 0,
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `frame-${shapeId}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Failed to save screenshot:", error);
+        }
     }
 
     return (
