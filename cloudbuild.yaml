@@ -1,0 +1,5 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/gen-lang-client-0521299386/backend-image:latest', './backend']
+images:
+  - 'gcr.io/gen-lang-client-0521299386/backend-image:latest'

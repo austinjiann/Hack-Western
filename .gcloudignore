@@ -1,0 +1,8 @@
+.git
+.gitignore
+frontend/node_modules
+frontend/dist
+backend/__pycache__
+backend/venv
+backend/.env
+backend/.env.local

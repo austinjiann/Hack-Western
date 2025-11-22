@@ -51,7 +51,7 @@ class Jobs(APIController):
 
     # DEV MOCK ENDPOINTS
     @post("/video/mock")
-    async def add_video_job(self, request: VideoJobRequest):
+    async def add_video_job_mock(self, request: Request, input: FromForm[VideoGenerationInput]):
         # validate input
         files = await request.files()
         
@@ -70,7 +70,7 @@ class Jobs(APIController):
         return json({"job_id": "mock-job-id"})
 
     @get("/video/mock/{job_id}")
-    async def get_video_job_status(self, job_id: str):
+    async def get_video_job_status_mock(self, job_id: str):
         return json({
             "status": "done",
             "job_start_time": "2024-01-01T00:00:00",

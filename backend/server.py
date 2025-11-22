@@ -17,6 +17,14 @@ services.add_instance(vertex_service, VertexService)
 services.add_instance(job_service, JobService)
 
 app = Application(services=services)
+
+# TODO: REMOVE IN PRODUCTION, FOR DEV ONLY
+app.use_cors(
+    allow_methods="*",
+    allow_origins="*",
+    allow_headers="*",
+)
+
 app.use_controllers()
 
 for route in app.router:
