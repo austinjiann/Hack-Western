@@ -1,2 +1,4 @@
-# deps
-node_modules/
+venv/
+.env
+.env.local
+__pycache__/

@@ -1,0 +1,5 @@
+blacksheep
+uvicorn
+google-genai
+python-dotenv
+pydantic-settings
