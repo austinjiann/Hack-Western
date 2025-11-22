@@ -1,18 +1,16 @@
-# ADDED: updated to use `google-genai` package (new Gemini SDK)
 from blacksheep import json, FromFiles
 from blacksheep.server.controllers import APIController, post
-
-from google.genai import Client
-from google.genai.types import Content, Part
 
 import tempfile
 import os
 import json as pyjson
 
-client = Client(api_key=os.getenv("GEMINI_API_KEY"))
-
+from backend.services.vertex_service import VertexService
 
 class GeminiController(APIController):
+    
+    def __init__(self, vertex_service: VertexService):
+        self.vertex_service = vertex_service
 
     @post("/extract-context")
     async def extract_context(self, files: FromFiles):
@@ -39,17 +37,14 @@ class GeminiController(APIController):
         )
 
         try:
-            # ADDED: Gemini 1.5 Flash example using google-genai
-            res = client.models.generate_content(
-                model="gemini-1.5-flash",
-                contents=[
-                    Content(
-                        parts=[
-                            Part.from_text(prompt),
-                            Part.from_file(tmp_path, mime_type="video/mp4")
-                        ]
-                    )
-                ]
+            # Read video file
+            with open(tmp_path, 'rb') as f:
+                video_data = f.read()
+            
+            # Use vertex service to analyze video
+            res = self.vertex_service.client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=[prompt, {"mime_type": "video/mp4", "data": video_data}]
             )
 
             raw = res.text
