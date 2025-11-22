@@ -161,25 +161,6 @@ export const useCanvas = () => {
         }
     }
 
-    // Create global context frame on load if it doesn't exist
-    const existingGCF = editor.getCurrentPageShapes().find(s => s.type === 'global-context-frame');
-    if (!existingGCF) {
-        const shapeId = createShapeId();
-        const shape: TLShapePartial = {
-            id: shapeId,
-            type: "global-context-frame",
-            x: -100,
-            y: 100,
-            props: {
-                w: 2000,
-                h: 2400,
-                title: "Global Context Frame",
-                backgroundColor: "#f8f9fa",
-            },
-        };
-        editor.createShapes([shape]);
-    }
-
     // Register side effect to prevent frame overlap
     editor.sideEffects.registerBeforeChangeHandler('shape', (prev, next) => {
         if (next.type !== 'aspect-frame') return next;
