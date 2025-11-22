@@ -3,7 +3,6 @@ from services.storage_service import StorageService
 from services.vertex_service import VertexService
 from services.job_service import JobService
 from rodi import Container
-from controllers.jobs import Jobs
 
 services = Container()
 
@@ -16,9 +15,6 @@ services.add_instance(vertex_service, VertexService)
 services.add_instance(job_service, JobService)
 
 app = Application(services=services)
-
-# Register controllers
-app.use_controllers(Jobs)
 
 # TODO: REMOVE IN PRODUCTION, FOR DEV ONLY
 app.use_cors(
