@@ -11,7 +11,6 @@ import {
     TLShape,
 } from 'tldraw'
 import { FrameActionMenu } from './FrameActionMenu'
-import { GlobalContextFrameActionMenu } from './GlobalContextFrameActionMenu'
 
 // --- Frame Shape ---
 
@@ -249,10 +248,6 @@ export class GlobalContextFrameShapeUtil extends BaseBoxShapeUtil<IGlobalContext
                     {shape.props.title || 'Global Context Frame'}
                 </div>
                 
-                {/* Toolbar - always fully opaque */}
-                <div style={{ position: 'relative', zIndex: 10, opacity: 1 }}>
-                    <GlobalContextFrameActionMenu shapeId={shape.id} />
-                </div>
 			</HTMLContainer>
 		)
 	}

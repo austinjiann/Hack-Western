@@ -8,6 +8,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [nameValue, setNameValue] = useState("");
     const [showOpacitySlider, setShowOpacitySlider] = useState(false);
+    const [promptText, setPromptText] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     
@@ -24,7 +25,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         [editor, shapeId]
     );
 
-    if (!isSelected || !frame) return null
+    if (!frame) return null
+    
+    // Show toolbar only when selected
+    const showToolbar = isSelected;
+    
+    // Show text box when selected OR when it has content
+    const showTextBox = isSelected || promptText.trim() !== "";
 
     const handleBackgroundColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -178,7 +185,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
         const formData  = new FormData();
       
-        formData.append("custom_prompt", ""); // empty for now, can use later
+        formData.append("custom_prompt", promptText);
         formData.append("global_context", ""); // also empty right now, populate later
         formData.append("files", blob)
 
@@ -270,6 +277,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
     const backgroundColor = "backgroundColor" in frame.props ? (frame.props.backgroundColor as string) : "#ffffff";
     const opacity = "opacity" in frame.props ? (frame.props.opacity as number) : 1;
+    const frameHeight = "h" in frame.props ? (frame.props.h as number) : 540;
+    const frameWidth = "w" in frame.props ? (frame.props.w as number) : 960;
+    
+    // Scale text box size based on frame width
+    const textBoxWidth = Math.max(400, Math.min(frameWidth * 0.9, 1200));
+    const textBoxPadding = Math.max(16, frameWidth * 0.02);
+    const fontSize = Math.max(14, Math.min(frameWidth * 0.025, 24));
 
     const handleOpacityChange = (value: number[]) => {
         editor.updateShapes([{
@@ -285,6 +299,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     return (
         <>
             {/* Toolbar above the frame */}
+            {showToolbar && (
             <div 
                 className="absolute -top-28 left-1/2 -translate-x-1/2 pointer-events-auto z-50"
                 onPointerDown={(e) => e.stopPropagation()}
@@ -414,6 +429,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
                     </Tooltip>
                 </Flex>
             </div>
+            )}
 
             {/* Opacity Slider - appears above toolbar when button is clicked */}
             {showOpacitySlider && (
@@ -441,6 +457,39 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
                         </div>
                     </div>
         </div>
+            )}
+
+            {/* Prompt Text Box - appears below the frame */}
+            {showTextBox && (
+            <div 
+                className="absolute pointer-events-auto z-50"
+                style={{ 
+                    top: `${frameHeight + 20}px`,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+            >
+                <div 
+                    className="bg-white rounded-full shadow-lg border border-gray-200"
+                    style={{ 
+                        minWidth: `${textBoxWidth}px`,
+                        paddingLeft: `${textBoxPadding}px`,
+                        paddingRight: `${textBoxPadding}px`,
+                        paddingTop: `${textBoxPadding * 0.625}px`,
+                        paddingBottom: `${textBoxPadding * 0.625}px`,
+                    }}
+                >
+                    <TextField.Root
+                        size="3"
+                        value={promptText}
+                        onChange={(e) => setPromptText(e.target.value)}
+                        placeholder="Enter your prompt..."
+                        style={{ width: '100%', border: 'none', outline: 'none', fontSize: `${fontSize}px` }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                </div>
+            </div>
             )}
         </>
     )
