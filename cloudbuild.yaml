@@ -1,5 +1,42 @@
 steps:
+  # Pull previous image for layer caching
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/gen-lang-client-0521299386/backend-image:latest', 'backend']
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'docker pull gcr.io/gen-lang-client-0521299386/backend-image:latest || exit 0'
+  
+  # Build with cache
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '--cache-from', 'gcr.io/gen-lang-client-0521299386/backend-image:latest',
+      '-t', 'gcr.io/gen-lang-client-0521299386/backend-image:latest',
+      '.'
+    ]
+  
+  # Deploy to Cloud Run with optimizations
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'hackwestern'
+      - '--image=gcr.io/gen-lang-client-0521299386/backend-image:latest'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--min-instances=0'
+      - '--max-instances=10'
+      - '--memory=512Mi'
+      - '--cpu=1'
+      - '--timeout=300'
+      - '--concurrency=80'
+      - '--no-cpu-throttling'
+
 images:
   - 'gcr.io/gen-lang-client-0521299386/backend-image:latest'
+
+options:
+  machineType: 'E2_HIGHCPU_8'  # faster build machine
+  logging: CLOUD_LOGGING_ONLY
