@@ -3,6 +3,7 @@ import "tldraw/tldraw.css";
 import { useCanvas } from "../hooks/useCanvas";
 import { CanvasToolbar } from "../components/canvas/CanvasToolbar";
 import { FrameShapeUtil } from "../shapes/FrameShape";
+import { ArrowActionMenu } from "../components/canvas/ArrowActionMenu";
 
 const customShapeUtils = [FrameShapeUtil];
 
@@ -11,7 +12,13 @@ export default function Canvas() {
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
-      <Tldraw onMount={handleMount} shapeUtils={customShapeUtils} />
+      <Tldraw 
+        onMount={handleMount} 
+        shapeUtils={customShapeUtils}
+        persistenceKey="hack-western-canvas-v1"
+      >
+        <ArrowActionMenu />
+      </Tldraw>
       <CanvasToolbar
         onClear={handleClear}
         onImport={handleImport}

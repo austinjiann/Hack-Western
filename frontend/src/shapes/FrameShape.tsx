@@ -38,7 +38,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 		return new Rectangle2d({
 			width: shape.props.w,
 			height: shape.props.h,
-			isFilled: false,
+			isFilled: true,
 		})
 	}
 
@@ -108,13 +108,15 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
         }
     }
 
-	override canReceiveNewChildrenOfType(_shape: IFrameShape, _type: TLShape['type']) {
-		return true
+	override canReceiveNewChildrenOfType(_shape: IFrameShape, type: TLShape['type']) {
+		return type !== 'aspect-frame'
 	}
 
 	override onDropShapesOver(shape: IFrameShape, shapes: TLShape[]) {
+        const shapesToReparent = shapes.filter(s => s.type !== 'aspect-frame');
+        if (shapesToReparent.length === 0) return;
 		this.editor.reparentShapes(
-			shapes,
+			shapesToReparent,
 			shape.id
 		)
 	}
