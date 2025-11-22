@@ -1,8 +1,8 @@
 import { Theme } from "@radix-ui/themes";
-import Navbar from './LandingComponents/Navbar';
-import Hero from './LandingComponents/Hero';
-import DemoSection from './LandingComponents/DemoSection';
-import Footer from './LandingComponents/Footer';
+import Navbar from '../components/landing/Navbar';
+import Hero from '../components/landing/Hero';
+import DemoSection from '../components/landing/DemoSection';
+import Footer from '../components/landing/Footer';
 
 function Landing() {
     return (
