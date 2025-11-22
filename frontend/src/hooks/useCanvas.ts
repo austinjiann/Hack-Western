@@ -38,6 +38,8 @@ export const useCanvas = () => {
       props: {
         w: FRAME_WIDTH,
         h: FRAME_HEIGHT,
+        name: "16:9 Frame",
+        backgroundColor: "#ffffff",
       },
     };
 
@@ -136,6 +138,27 @@ export const useCanvas = () => {
     } else {
         // Sync ref with existing frames
         frameIdsRef.current = existingFrames.map(s => s.id);
+        
+        // Migration: Update existing frames to include new properties if missing
+        const framesToUpdate = existingFrames.filter(frame => {
+            const props = frame.props as any;
+            return !props.name || !props.backgroundColor || props.opacity === undefined;
+        });
+        
+        if (framesToUpdate.length > 0) {
+            editor.updateShapes(
+                framesToUpdate.map(frame => ({
+                    id: frame.id,
+                    type: 'aspect-frame' as const,
+                    props: {
+                        ...frame.props,
+                        name: (frame.props as any).name || '16:9 Frame',
+                        backgroundColor: (frame.props as any).backgroundColor || '#ffffff',
+                        opacity: (frame.props as any).opacity ?? 1,
+                    },
+                }))
+            );
+        }
     }
 
     // Register side effect to prevent frame overlap

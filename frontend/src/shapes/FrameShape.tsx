@@ -17,6 +17,9 @@ export type IFrameShape = TLBaseShape<
 	{
 		w: number
 		h: number
+		name?: string
+		backgroundColor?: string
+		opacity?: number
 	}
 >
 
@@ -25,12 +28,18 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 	static override props: RecordProps<IFrameShape> = {
 		w: T.number,
 		h: T.number,
+		name: T.string.optional(),
+		backgroundColor: T.string.optional(),
+		opacity: T.number.optional(),
 	}
 
 	override getDefaultProps(): IFrameShape['props'] {
 		return {
 			w: 960,
 			h: 540,
+			name: '16:9 Frame',
+			backgroundColor: '#ffffff',
+			opacity: 1,
 		}
 	}
 
@@ -43,6 +52,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 	}
 
 	override component(shape: IFrameShape) {
+		const opacity = shape.props.opacity ?? 1;
 		return (
 			<HTMLContainer
 				id={shape.id}
@@ -52,9 +62,23 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     height: '100%',
                     boxSizing: 'border-box',
                     pointerEvents: 'all',
-                    backgroundColor: '#ffffff',
+                    position: 'relative',
+                    opacity: 1, // Explicitly set to 1 to prevent tldraw from applying opacity
 				}}
 			>
+                {/* Background layer with opacity */}
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: shape.props.backgroundColor || '#ffffff',
+                    opacity: opacity,
+                    pointerEvents: 'none',
+                }} />
+                
+                {/* Title - always fully opaque */}
                 <div style={{
                     position: 'absolute',
                     top: -24,
@@ -66,10 +90,16 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     fontSize: 12,
                     fontWeight: 'bold',
                     fontFamily: 'Inter, sans-serif',
+                    zIndex: 10,
+                    opacity: 1, // Explicitly set to 1 to override any inherited opacity
                 }}>
-                    16:9 Frame
+                    {shape.props.name || '16:9 Frame'}
                 </div>
-                <FrameActionMenu shapeId={shape.id} />
+                
+                {/* Toolbar - always fully opaque */}
+                <div style={{ position: 'relative', zIndex: 10, opacity: 1 }}>
+                    <FrameActionMenu shapeId={shape.id} />
+                </div>
 			</HTMLContainer>
 		)
 	}
