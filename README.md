@@ -1,6 +1,6 @@
 # FlowBoard
 
-https://github.com/user-attachments/assets/79eaf6e8-60f6-489c-bcd8-2b120437c60f
+https://github.com/user-attachments/assets/bd51f5c9-d22b-4207-812f-29e0d95ed803
 
 **Direct Your Video Frame by Frame**
 
@@ -15,8 +15,6 @@ FlowBoard is an AI-powered video storyboard creation tool that transforms your r
 - **Video Merging**: Combine multiple generated video clips into a single seamless video
 - **Custom Frames**: Create aspect-ratio locked frames (16:9) for consistent video output
 - **Real-time Preview**: See your video generation progress in real-time
-
-## Tech Stack
 
 ## Setup
 
