@@ -3,9 +3,11 @@ import { Tooltip, Button, Flex, TextField } from "@radix-ui/themes";
 import { Sparkles, Image as ImageIcon, Palette, Type, Banana, Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from 'sonner';
+import { useGlobalContext } from '../../hooks/useGlobalContext';
 
 export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
-    const editor = useEditor()
+    const editor = useEditor();
+    const { context } = useGlobalContext("global-context");
     const [isEditingName, setIsEditingName] = useState(false);
     const [nameValue, setNameValue] = useState("");
     const [promptText, setPromptText] = useState("");
@@ -495,7 +497,8 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         const formData  = new FormData();
       
         formData.append("custom_prompt", promptText);
-        formData.append("global_context", ""); // also empty right now, populate later
+        formData.append("global_context", JSON.stringify(context?.sceneState ?? {}));
+        console.log("TEST HUEIHGIUEWHUIGIUH", JSON.stringify(context?.sceneState ?? {}));
         formData.append("files", blob)
 
         try {

@@ -1,4 +1,4 @@
-from blacksheep import json, FromFiles
+from blacksheep import json, Request
 from blacksheep.server.controllers import APIController, post
 
 import tempfile
@@ -13,66 +13,104 @@ class Gemini(APIController):
         self.vertex_service = vertex_service
 
     @post("/extract-context")
-    async def extract_context(self, files: FromFiles):
-        if not files.value:
-            return json({"error": "No file provided"}, status=400)
-
-        video_file = files.value[0]
-
-        # ADDED: save short video to temp
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-            tmp.write(video_file.data)
-            tmp_path = tmp.name
-
-        prompt = (
-            "Extract structured scene information from this video.\n"
-            "Respond with ONLY valid JSON. No explanations, no markdown, no backticks.\n"
-            "Follow this exact structure, keys required:\n"
-            "{\n"
-            '  "entities": [\n'
-            '    { "id": "id-1", "description": "...", "appearance": "..." }\n'
-            "  ],\n"
-            '  "environment": "...",\n'
-            '  "style": "..."\n'
-            "}\n"
-            "If information is missing, use empty strings.\n"
-        )
-
+    async def extract_context(self, request: Request):
         try:
-            # Read video file
-            with open(tmp_path, 'rb') as f:
-                video_data = f.read()
+            # Parse multipart form data manually
+            multipart = await request.multipart()
             
-            # Use vertex service to analyze video
-            res = self.vertex_service.client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=[prompt, {"mime_type": "video/mp4", "data": video_data}]
+            video_data = None
+            async for part in multipart:
+                if part.name == "files":
+                    video_data = await part.read()
+                    break
+            
+            if not video_data:
+                return json({"error": "No video file provided"}, status=400)
+            
+            print(f"Received video data: {len(video_data)} bytes")
+
+            # Save to temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+                tmp.write(video_data)
+                tmp_path = tmp.name
+
+            prompt = (
+                "Extract structured scene information from this video.\n"
+                "Respond with ONLY valid JSON. No explanations, no markdown, no backticks.\n"
+                "Follow this exact structure, keys required:\n"
+                "{\n"
+                '  "entities": [\n'
+                '    { "id": "id-1", "description": "...", "appearance": "..." }\n'
+                "  ],\n"
+                '  "environment": "...",\n'
+                '  "style": "..."\n'
+                "}\n"
+                "If information is missing, use empty strings.\n"
             )
 
-            raw = res.text or res.candidates[0].content.parts[0].text
-
             try:
-                parsed = pyjson.loads(raw)
-            except Exception:
-                return json({"error": "Failed to parse JSON", "raw": raw}, status=500)
+                # Read video file
+                with open(tmp_path, 'rb') as f:
+                    video_bytes = f.read()
+                
+                # Use vertex service to analyze video
+                res = self.vertex_service.client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=[prompt, {"mime_type": "video/mp4", "data": video_bytes}]
+                )
 
-            return json(parsed)
+                raw = res.text or res.candidates[0].content.parts[0].text
 
-        finally:
-            os.remove(tmp_path)
+                # Strip markdown if present
+                cleaned = raw.strip()
+                if cleaned.startswith("```"):
+                    lines = cleaned.split('\n')
+                    cleaned = '\n'.join(lines[1:])
+                if cleaned.endswith("```"):
+                    cleaned = cleaned[:-3]
+                cleaned = cleaned.strip()
+
+                try:
+                    parsed = pyjson.loads(cleaned)
+                    return json(parsed)
+                except Exception:
+                    return json({"error": "Failed to parse JSON", "raw": raw}, status=500)
+
+            finally:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+
+        except Exception as e:
+            print(f"ERROR in extract_context: {e}")
+            import traceback
+            traceback.print_exc()
+            return json({"error": str(e)}, status=500)
 
     @post("/image")
-    async def generate_image(self, image: FromFiles):
-        if not image.value:
-            return json({"error": "No image file provided"}, status=400)
+    async def generate_image(self, request: Request):
+        try:
+            multipart = await request.multipart()
+            
+            image_data = None
+            async for part in multipart:
+                if part.name == "image":
+                    image_data = await part.read()
+                    break
+            
+            if not image_data:
+                return json({"error": "No image file provided"}, status=400)
 
-        image_file = image.value[0]
+            prompt = "Improve the attached image. Do not deviate from the original art style too much, simply understand the artist's idea and enhance it a bit."
 
-        prompt = "Improve the attached image. Do not deviate from the original art style too much, simply understand the artist's idea and enhance it a bit."
+            res = await self.vertex_service.generate_image_content(
+                prompt=prompt,
+                image=image_data
+            )
 
-        res = await self.vertex_service.generate_image_content(
-            prompt=prompt,
-            image=image_file.data
-        )
-
-        return json({"image_bytes": res})
+            return json({"image_bytes": res})
+            
+        except Exception as e:
+            print(f"ERROR in generate_image: {e}")
+            import traceback
+            traceback.print_exc()
+            return json({"error": str(e)}, status=500)
