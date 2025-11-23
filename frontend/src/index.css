@@ -16,6 +16,7 @@
   --image-gradient-hero: linear-gradient(to right, var(--color-brand-indigo), var(--color-brand-purple), var(--color-brand-pink));
   --image-gradient-logo: linear-gradient(to bottom right, var(--color-brand-indigo), var(--color-brand-purple));
   --image-grid-pattern: linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px);
+  --font-ananda: 'Ananda', sans-serif;
 }
 
 @layer components {

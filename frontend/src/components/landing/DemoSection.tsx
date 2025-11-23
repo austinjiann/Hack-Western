@@ -12,7 +12,7 @@ const DemoSection: React.FC = () => {
         const next = (parseInt(prev) + 1) % 3;
         return next.toString();
       });
-    }, 4000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -47,8 +47,8 @@ const DemoSection: React.FC = () => {
       overlay: (
         <div className="absolute inset-0 flex items-center justify-center bg-white/30 backdrop-blur-sm">
            <div className="flex flex-col items-center gap-4 p-6 bg-white/90 rounded-2xl shadow-xl">
-             <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-             <span className="text-indigo-600 font-mono text-sm tracking-widest font-bold">PROCESSING...</span>
+             <div className="w-12 h-12 border-4 border-brand-pink/50 border-t-transparent rounded-full animate-spin" />
+             <span className="text-brand-pink/50 font-mono text-sm tracking-widest font-bold">visualizing...</span>
            </div>
         </div>
       )
@@ -56,13 +56,13 @@ const DemoSection: React.FC = () => {
     {
       value: "2",
       title: "Video Generation",
-      desc: "A high-fidelity 5s clip is generated. Ready to extend.",
+      desc: "5s clip is generated and we automatically create the next starting frame",
       icon: <Film className="w-5 h-5" />,
       visual: "https://picsum.photos/800/450", 
       overlay: (
          <div className="absolute bottom-6 right-6 flex items-center gap-2 bg-black/70 px-4 py-2 rounded-lg border border-white/10 backdrop-blur-md">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-white text-xs font-mono">REC 00:04:22</span>
+            <span className="text-white text-xs font-mono">REC 00:04:67</span>
          </div>
       )
     }
@@ -73,9 +73,9 @@ const DemoSection: React.FC = () => {
       
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl lg:text-6xl font-normal mb-4 tracking-tight text-gray-900 leading-relaxed py-2" style={{ fontFamily: 'Ananda, sans-serif' }}>
+          <h2 className="text-3xl md:text-5xl lg:text-6xl mb-4 text-gray-900 leading-relaxed py-2 font-ananda!">
             From Static to Cinematic. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 inline-block pb-2">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-brand-pink/40 to-brand-pink/75 inline-block pb-2">
               In Seconds.
             </span>
           </h2>
@@ -92,33 +92,57 @@ const DemoSection: React.FC = () => {
           className="grid md:grid-cols-12 gap-8 items-center"
         >
            {/* Steps Sidebar / Tab List */}
-           <Tabs.List className="md:col-span-4 flex flex-col gap-4">
-              {steps.map((step) => (
+           <Tabs.List className="md:col-span-4 flex flex-col gap-3">
+              {steps.map((step, idx) => (
                 <Tabs.Trigger
                   key={step.value}
                   value={step.value}
-                  className={`text-left p-6 rounded-2xl border transition-all duration-300 group outline-none ring-offset-2 focus-visible:ring-2 ring-indigo-500 ${
+                  className={`text-left p-8 rounded-2xl transition-all duration-500 group outline-none ring-offset-2 focus-visible:ring-2 ring-brand-pink/75 relative overflow-hidden ${
                     activeStep === step.value
-                      ? 'bg-white border-indigo-200 shadow-lg shadow-indigo-500/5' 
-                      : 'bg-transparent border-transparent hover:bg-gray-50'
+                      ? 'bg-linear-to-br from-brand-pink/10 via-brand-purple/5 to-transparent shadow-xl' 
+                      : 'bg-white/50 hover:bg-white/80 hover:shadow-md'
                   }`}
                 >
-                  <div className="flex items-center gap-4 mb-2">
-                    <div className={`p-2 rounded-lg transition-colors ${activeStep === step.value ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                      {step.icon}
+                  {/* Step Number */}
+                  <div className={`absolute -top-4 -right-4 text-[120px] font-bold leading-none transition-all duration-500 ${
+                    activeStep === step.value 
+                      ? 'text-brand-pink/8 scale-100' 
+                      : 'text-gray-200/50 scale-90'
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  
+                  <div className="relative z-10">
+                    <div className={`text-xs font-mono tracking-wider mb-3 transition-all duration-300 ${
+                      activeStep === step.value 
+                        ? 'text-brand-pink/75' 
+                        : 'text-gray-400'
+                    }`}>
+                      STEP {idx + 1}
                     </div>
-                    <h3 className={`font-semibold transition-colors ${activeStep === step.value ? 'text-gray-900' : 'text-gray-500'}`}>
+                    
+                    <h3 className={`text-2xl font-bold mb-3 transition-all duration-300 ${
+                      activeStep === step.value 
+                        ? 'text-gray-900' 
+                        : 'text-gray-500'
+                    }`}>
                       {step.title}
                     </h3>
+                    
+                    <p className={`text-sm leading-relaxed transition-all duration-300 ${
+                      activeStep === step.value 
+                        ? 'text-gray-600' 
+                        : 'text-gray-400'
+                    }`}>
+                      {step.desc}
+                    </p>
+                    
+                    {activeStep === step.value && (
+                      <div className="w-full h-1 bg-gray-100 mt-6 rounded-full overflow-hidden">
+                        <div className="h-full bg-linear-to-r from-brand-pink/25 via-brand-pink/50 to-brand-pink/25 animate-[width_5s_linear]" style={{width: '100%'}}></div>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-500 pl-[3.25rem]">
-                    {step.desc}
-                  </p>
-                  {activeStep === step.value && (
-                    <div className="w-full h-1 bg-gray-100 mt-4 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-600 animate-[width_4s_linear]" style={{width: '100%'}}></div>
-                    </div>
-                  )}
                 </Tabs.Trigger>
               ))}
            </Tabs.List>
@@ -128,7 +152,6 @@ const DemoSection: React.FC = () => {
              {steps.map((step) => (
                 <Tabs.Content key={step.value} value={step.value} className="outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="relative rounded-3xl overflow-hidden border border-gray-200 shadow-2xl bg-gray-50 aspect-video group">
-                    {/* Main Image */}
                     <img 
                       src={step.visual} 
                       alt="Demo Step" 
@@ -138,7 +161,6 @@ const DemoSection: React.FC = () => {
                     {/* Step Overlay content */}
                     {step.overlay}
 
-                    {/* Static UI Elements */}
                     <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
                         <div className="flex gap-2">
                           <div className="w-3 h-3 rounded-full bg-red-400 shadow-sm" />

@@ -8,14 +8,13 @@ const Hero: React.FC = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center py-32 overflow-hidden">
       
-      {/* Radial Purple Glow for Hero Text */}
-      <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      <div className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-pink/15 rounded-full blur-[250px] -z-10 pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10 text-center">
         
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal text-gray-900 mb-4 max-w-5xl mx-auto leading-relaxed py-2" style={{ fontFamily: 'Ananda, sans-serif' }}>
-          Direct Your Video <br />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 inline-block pb-2">
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-normal text-gray-900 mb-4 max-w-5xl mx-auto leading-relaxed py-2 font-ananda!">
+          Storyboard Your Vision <br />
+          <span className="bg-clip-text text-transparent bg-brand-pink/50 inline-block pb-2 px-1">
             Frame by Frame.
           </span>
         </h1>
@@ -32,8 +31,6 @@ const Hero: React.FC = () => {
             <MousePointer2 className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
-
-        {/* Floating UI mockups removed */}
       </div>
 
     </section>
