@@ -59,7 +59,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 			<HTMLContainer
 				id={shape.id}
 				style={{
-					border: '2px solid #000',
+					border: '2px dashed #000',
                     width: '100%',
                     height: '100%',
                     boxSizing: 'border-box',
