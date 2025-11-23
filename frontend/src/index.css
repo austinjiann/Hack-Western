@@ -149,3 +149,7 @@ button[data-testid="action.back-to-content"],
     z-index: 99999 !important;
     transform: none !important;
 }
+
+.tl-watermark_SEE-LICENSE{
+    display: none !important; /* secret tech */
+}

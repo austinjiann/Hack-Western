@@ -57,8 +57,21 @@ class VertexService:
             return JobStatus(status="done", job_start_time=None, video_url=operation.result.generated_videos[0].video.uri)
         return JobStatus(status="waiting", job_start_time=None, video_url=None)
     
+    def analyze_video_content(self, prompt: str, video_data: bytes) -> dict:
+        return self.client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[
+                Part.from_bytes(
+                    data=video_data.data,
+                    mime_type="video/mp4",
+                ),
+                prompt
+                ]
+        )
+
     async def test_service(self):
         return self.client.models.generate_content(
             model="gemini-2.0-flash",
             contents="Hi there, does u work?",
         )
+

@@ -1,8 +1,5 @@
 from blacksheep import json, Request
 from blacksheep.server.controllers import APIController, post
-
-import tempfile
-import os
 import json as pyjson
 
 from services.vertex_service import VertexService
@@ -16,24 +13,13 @@ class Gemini(APIController):
     async def extract_context(self, request: Request):
         try:
             # Parse multipart form data manually
-            multipart = await request.multipart()
+            files = await request.files()
             
-            video_data = None
-            async for part in multipart:
-                if part.name == "files":
-                    video_data = await part.read()
-                    break
+            video_data = files[0]
             
             if not video_data:
                 return json({"error": "No video file provided"}, status=400)
             
-            print(f"Received video data: {len(video_data)} bytes")
-
-            # Save to temp file
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-                tmp.write(video_data)
-                tmp_path = tmp.name
-
             prompt = (
                 "Extract structured scene information from this video.\n"
                 "Respond with ONLY valid JSON. No explanations, no markdown, no backticks.\n"
@@ -47,38 +33,29 @@ class Gemini(APIController):
                 "}\n"
                 "If information is missing, use empty strings.\n"
             )
+            #use vertex service to analyze video
+            res = self.vertex_service.analyze_video_content(
+                prompt=prompt,
+                video_data=video_data
+            )
+
+            raw = res.text or res.candidates[0].content.parts[0].text
+
+            # Strip markdown if present
+            cleaned = raw.strip()
+            if cleaned.startswith("```"):
+                lines = cleaned.split('\n')
+                cleaned = '\n'.join(lines[1:])
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            cleaned = cleaned.strip()
 
             try:
-                # Read video file
-                with open(tmp_path, 'rb') as f:
-                    video_bytes = f.read()
-                
-                # Use vertex service to analyze video
-                res = self.vertex_service.client.models.generate_content(
-                    model="gemini-2.0-flash",
-                    contents=[prompt, {"mime_type": "video/mp4", "data": video_bytes}]
-                )
+                parsed = pyjson.loads(cleaned)
+                return json(parsed)
+            except Exception:
+                return json({"error": "Failed to parse JSON", "raw": raw}, status=500)
 
-                raw = res.text or res.candidates[0].content.parts[0].text
-
-                # Strip markdown if present
-                cleaned = raw.strip()
-                if cleaned.startswith("```"):
-                    lines = cleaned.split('\n')
-                    cleaned = '\n'.join(lines[1:])
-                if cleaned.endswith("```"):
-                    cleaned = cleaned[:-3]
-                cleaned = cleaned.strip()
-
-                try:
-                    parsed = pyjson.loads(cleaned)
-                    return json(parsed)
-                except Exception:
-                    return json({"error": "Failed to parse JSON", "raw": raw}, status=500)
-
-            finally:
-                if os.path.exists(tmp_path):
-                    os.remove(tmp_path)
 
         except Exception as e:
             print(f"ERROR in extract_context: {e}")
