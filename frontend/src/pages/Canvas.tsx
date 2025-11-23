@@ -18,10 +18,14 @@ export default function Canvas() {
         shapeUtils={customShapeUtils}
         persistenceKey="hack-western-canvas-v3"
         components={{
+          OnTheCanvas: () => (
+            <>
+              <ArrowActionMenu />
+            </>
+          ),
           InFrontOfTheCanvas: () => (
             <>
               <VideoGenerationManager />
-              <ArrowActionMenu />
             </>
           ),
         }}

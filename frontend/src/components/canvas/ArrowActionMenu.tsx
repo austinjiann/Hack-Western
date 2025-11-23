@@ -23,11 +23,10 @@ export const ArrowActionMenu = () => {
         if (!bounds) return null;
 
         const center = { x: bounds.x + bounds.w / 2, y: bounds.y + bounds.h / 2 };
-        const viewportPoint = editor.pageToViewport(center);
 
-        // Fixed size in viewport pixels (won't scale with zoom)
-        const viewportWidth = 480;
-        const viewportHeight = 270;
+        // Fixed size in page coordinates (will scale with zoom)
+        const pageWidth = 480;
+        const pageHeight = 270;
 
         // Get video metadata from arrow meta
         const videoUrl = shape.meta?.videoUrl as string | null;
@@ -38,10 +37,10 @@ export const ArrowActionMenu = () => {
 
         return { 
           id: shapeId, 
-          x: viewportPoint.x, 
-          y: viewportPoint.y,
-          width: viewportWidth,
-          height: viewportHeight,
+          x: center.x, 
+          y: center.y,
+          width: pageWidth,
+          height: pageHeight,
           videoUrl,
           status,
           timer,
@@ -148,9 +147,9 @@ export const ArrowActionMenu = () => {
             key={arrowInfo.id}
             style={{
               position: 'absolute',
-              top: arrowInfo.y,
+              top: arrowInfo.y - arrowInfo.height / 2 - 20,
               left: arrowInfo.x,
-              transform: 'translate(-50%, -50%)',
+              transform: 'translate(-50%, -100%)',
               zIndex: 2000,
               pointerEvents: 'auto',
             }}
