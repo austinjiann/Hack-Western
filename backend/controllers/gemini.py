@@ -26,14 +26,16 @@ class Gemini(APIController):
 
         prompt = (
             "Extract structured scene information from this video.\n"
-            "Return ONLY JSON in exactly this shape:\n"
+            "Respond with ONLY valid JSON. No explanations, no markdown, no backticks.\n"
+            "Follow this exact structure, keys required:\n"
             "{\n"
             '  "entities": [\n'
             '    { "id": "id-1", "description": "...", "appearance": "..." }\n'
             "  ],\n"
             '  "environment": "...",\n'
             '  "style": "..."\n'
-            "}"
+            "}\n"
+            "If information is missing, use empty strings.\n"
         )
 
         try:
@@ -47,7 +49,7 @@ class Gemini(APIController):
                 contents=[prompt, {"mime_type": "video/mp4", "data": video_data}]
             )
 
-            raw = res.text
+            raw = res.text or res.candidates[0].content.parts[0].text
 
             try:
                 parsed = pyjson.loads(raw)
