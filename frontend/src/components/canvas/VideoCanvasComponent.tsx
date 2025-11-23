@@ -85,15 +85,15 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     position: 'absolute',
                     top: -24,
                     left: 0,
-                    background: 'black',
-                    color: 'white',
-                    padding: '2px 8px',
-                    borderRadius: '4px 4px 0 0',
-                    fontSize: 18,
-                    fontWeight: 'bold',
+                    background: 'transparent',
+                    color: '#000000',
+                    padding: '0',
+                    fontSize: 12,
+                    fontWeight: 600,
                     fontFamily: 'Inter, sans-serif',
                     zIndex: 10,
-                    opacity: 1, // Explicitly set to 1 to override any inherited opacity
+                    opacity: 1,
+                    pointerEvents: 'none',
                 }}>
                     {shape.props.name || '16:9 Frame'}
                 </div>
