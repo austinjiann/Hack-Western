@@ -160,10 +160,36 @@ export const useCanvas = () => {
                 }))
             );
         }
+
+        // Migration: Unlock all arrows so they can be deleted
+        const arrows = editor.getCurrentPageShapes().filter(s => s.type === 'arrow');
+        const lockedArrows = arrows.filter(a => a.isLocked);
+        if (lockedArrows.length > 0) {
+             editor.updateShapes(lockedArrows.map(a => ({ id: a.id, type: 'arrow', isLocked: false })));
+        }
     }
 
-    // Register side effect to prevent frame overlap
+    // Register side effect to prevent frame overlap and lock arrow movement
     editor.sideEffects.registerBeforeChangeHandler('shape', (prev, next) => {
+        // Arrow Logic: Prevent individual movement
+        if (next.type === 'arrow') {
+             const selectedIds = editor.getSelectedShapeIds();
+             if (selectedIds.includes(next.id)) {
+                 // Check if any connected shape (frame) is also selected
+                 const bindings = editor.getBindingsInvolvingShape(next.id);
+                 const connectedIds = bindings.map((b: any) => b.fromId === next.id ? b.toId : b.fromId);
+                 
+                 const isConnectedShapeSelected = connectedIds.some((id: any) => selectedIds.includes(id));
+                 
+                 if (!isConnectedShapeSelected) {
+                     // Arrow is selected but no connected shape is selected
+                     // Block the change to prevent individual movement/editing
+                     return prev;
+                 }
+             }
+             return next;
+        }
+
         if (next.type !== 'aspect-frame') return next;
         
         // Only check if position changed
@@ -221,6 +247,24 @@ export const useCanvas = () => {
             
             if (arrowsToDelete.length > 0) {
                 editor.deleteShapes(arrowsToDelete);
+            }
+        }
+    });
+
+    // Register after delete handler to restore bindings if shapes still exist
+    // This prevents unbinding arrows by dragging them
+    editor.sideEffects.registerAfterDeleteHandler('binding', (binding) => {
+        if (binding.type === 'arrow') {
+            const arrowId = (binding as any).fromId;
+            const targetId = (binding as any).toId;
+            
+            const arrow = editor.getShape(arrowId);
+            const target = editor.getShape(targetId);
+            
+            // If both shapes still exist, this was likely an accidental unbind (e.g. dragging handle)
+            if (arrow && target) {
+                // Restore the binding
+                editor.createBinding(binding as any);
             }
         }
     });

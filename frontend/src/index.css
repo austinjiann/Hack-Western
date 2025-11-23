@@ -30,6 +30,11 @@ body {
     overscroll-behavior: none;
 }
 
+/* Hide handles when 'hide-handles' class is present on body */
+body.hide-handles .tl-handle {
+    display: none !important;
+}
+
 /* Tldraw Overrides - Grid */
 .tl-container {
     --tl-grid: #9ca3af;
@@ -148,4 +153,27 @@ button[data-testid="action.back-to-content"],
     margin: 0 !important;
     z-index: 99999 !important;
     transform: none !important;
+}
+
+/* Blur Pulse Animation */
+@keyframes blur-pulse {
+    0% {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        background: rgba(255, 255, 255, 0);
+    }
+    50% {
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        background: rgba(226, 232, 240, 0.5); /* Slight gray/blue tint to be visible on white */
+    }
+    100% {
+        backdrop-filter: blur(0px);
+        -webkit-backdrop-filter: blur(0px);
+        background: rgba(255, 255, 255, 0);
+    }
+}
+
+.animate-blur-pulse {
+    animation: blur-pulse 2s ease-in-out infinite;
 }

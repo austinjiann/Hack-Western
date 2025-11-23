@@ -21,7 +21,7 @@ export const VideoGenerationManager = () => {
                     const response = await fetch(`${backend_url}/api/jobs/video/${jobId}`)
                     if (!response.ok) {
                         // Show error toast
-                        toast.error('Unexpected server error')
+                        toast.error('Unable to Read Try Again')
                         
                         // Clear the interval
                         if (intervalRef.current) {

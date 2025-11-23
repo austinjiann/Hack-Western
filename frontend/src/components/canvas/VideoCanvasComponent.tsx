@@ -9,8 +9,54 @@ import {
     TLResizeInfo,
     resizeBox,
     TLShape,
+    useEditor,
+    useValue,
+    TLShapeId,
 } from 'tldraw'
+import { createPortal } from 'react-dom'
 import { FrameActionMenu } from './FrameActionMenu'
+
+// --- Frame Overlay Component for Blur Effect ---
+
+const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
+    const editor = useEditor()
+
+    const bounds = useValue(
+        'frame-bounds',
+        () => {
+            const pageBounds = editor.getShapePageBounds(shapeId as TLShapeId)
+            if (!pageBounds) return null
+            const topLeft = editor.pageToViewport(pageBounds)
+            const zoom = editor.getZoomLevel()
+            return {
+                x: topLeft.x,
+                y: topLeft.y,
+                w: pageBounds.w * zoom,
+                h: pageBounds.h * zoom,
+            }
+        },
+        [editor, shapeId]
+    )
+
+    if (!bounds) return null
+
+    return createPortal(
+        <div
+            className="animate-blur-pulse"
+            style={{
+                position: 'fixed',
+                top: bounds.y,
+                left: bounds.x,
+                width: bounds.w,
+                height: bounds.h,
+                zIndex: 999999,
+                pointerEvents: 'none',
+                borderRadius: 0, // Frames are usually rectangular
+            }}
+        />,
+        document.body
+    )
+}
 
 // --- Frame Shape ---
 
@@ -55,19 +101,50 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 
 	override component(shape: IFrameShape) {
 		const opacity = shape.props.opacity ?? 1;
+        const isImproving = shape.meta?.isImproving === true;
+        const isGeneratingVideo = shape.props.name === 'Generating...';
+
 		return (
 			<HTMLContainer
 				id={shape.id}
 				style={{
-					border: '2px dashed #000',
+					border: isImproving || isGeneratingVideo ? 'none' : '2px dashed #000',
                     width: '100%',
                     height: '100%',
                     boxSizing: 'border-box',
                     pointerEvents: 'all',
                     position: 'relative',
-                    opacity: 1, // Explicitly set to 1 to prevent tldraw from applying opacity
+                    opacity: 1,
 				}}
 			>
+                {/* External Portal Overlay for Blur Effect (Covers children) */}
+                {(isImproving || isGeneratingVideo) && (
+                    <FrameOverlay shapeId={shape.id} />
+                )}
+
+                {/* Click capture layer */}
+                <div 
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 0,
+                        pointerEvents: 'all',
+                        cursor: 'pointer',
+                        border: (isImproving || isGeneratingVideo) ? 'none' : 'none',
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            this.editor.select(shape.id);
+                        }
+                    }}
+                    onPointerDown={(_e) => {
+                        this.editor.select(shape.id);
+                    }}
+                />
+
                 {/* Background layer with opacity */}
                 <div style={{
                     position: 'absolute',
@@ -78,7 +155,10 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
                     backgroundColor: shape.props.backgroundColor || '#ffffff',
                     opacity: opacity,
                     pointerEvents: 'none',
+                    zIndex: 1,
                 }} />
+                
+                {/* Title - always fully opaque */}
                 
                 {/* Title - always fully opaque */}
                 <div style={{
