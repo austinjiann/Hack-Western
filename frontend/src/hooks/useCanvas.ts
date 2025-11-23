@@ -45,7 +45,7 @@ export const useCanvas = () => {
     const lastFrameWidth = lastFrame && "w" in lastFrame.props ? (lastFrame.props.w as number) : FRAME_WIDTH;
     
     const x = position?.x ?? (lastFrame ? lastFrame.x + lastFrameWidth + 50 : 100);
-    const y = position?.y ?? (lastFrame ? lastFrame.y : 200);
+    const y = position?.y ?? (lastFrame ? lastFrame.y : 400);
 
     const shape: TLShapePartial = {
       id: shapeId,

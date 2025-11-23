@@ -139,71 +139,62 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
 		<Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
 			<Dialog.Content 
 				style={{ 
-					maxWidth: '95vw',
-					maxHeight: '95vh',
-					width: '95vw',
-					height: '95vh',
+					maxWidth: '80vw',
+					maxHeight: '80vh',
+					width: '80vw',
+					height: '80vh',
 					padding: 0,
-					background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+					background: 'rgba(245, 247, 250, 0.7)',
+					backdropFilter: 'blur(20px) saturate(180%)',
+					WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+					border: '1px solid rgba(255, 255, 255, 0.3)',
 					fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 					overflow: 'hidden',
 				}}
 			>
 				<Flex direction="column" style={{ height: '100%' }}>
-					{/* Header */}
-					<Flex 
-						align="center" 
-						justify="between" 
-						px="6" 
-						py="4"
-						style={{
-							background: 'rgba(255, 255, 255, 0.95)',
-							backdropFilter: 'blur(10px)',
-							borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-							boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)',
-						}}
-					>
-						<Text size="5" weight="bold" style={{ 
-							background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-							WebkitBackgroundClip: 'text',
-							WebkitTextFillColor: 'transparent',
-							fontFamily: "'Inter', sans-serif",
-						}}>
-							{videoClip.title || 'Video Editor'}
-						</Text>
-						<Dialog.Close>
-							<IconButton 
-								size="3" 
-								variant="ghost" 
-								style={{ cursor: 'pointer' }}
-							>
-								<X size={20} />
-							</IconButton>
-						</Dialog.Close>
-					</Flex>
+					{/* Close button - floating */}
+					<Dialog.Close>
+						<IconButton 
+							size="3" 
+							variant="ghost" 
+							style={{ 
+								cursor: 'pointer',
+								position: 'absolute',
+								top: '12px',
+								right: '12px',
+								zIndex: 10,
+								background: 'rgba(255, 255, 255, 0.8)',
+								backdropFilter: 'blur(10px)',
+								WebkitBackdropFilter: 'blur(10px)',
+								borderRadius: '50%',
+							}}
+						>
+							<X size={20} />
+						</IconButton>
+					</Dialog.Close>
 
 					{/* Body */}
 					<Flex 
-						direction="column" 
+						direction="row" 
 						gap="4" 
-						p="6" 
+						p="4" 
 						style={{ flex: 1, overflow: 'hidden' }}
 					>
 						{/* Video Preview */}
 						<Box 
 							style={{
-								flex: 7,
+								flex: 1,
 								display: 'flex',
 								alignItems: 'center',
 								justifyContent: 'center',
-								background: '#000',
-								borderRadius: '16px',
+								background: 'rgba(0, 0, 0, 0.8)',
+								backdropFilter: 'blur(10px)',
+								WebkitBackdropFilter: 'blur(10px)',
+								borderRadius: '12px',
 								overflow: 'hidden',
 								position: 'relative',
-								boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-								maxWidth: '60%',
-								margin: '0 auto',
-								width: '100%',
+								boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
 							}}
 						>
 							<VideoPlayer
@@ -227,27 +218,35 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
 							/>
 						</Box>
 
-						{/* Controls Container */}
-						<Flex direction="column" gap="4" style={{ flex: 3 }}>
-							{/* Toolbar */}
-							<Flex 
-								gap="2" 
-								align="center" 
-								justify="center"
-								p="4"
-								style={{
-									background: 'rgba(255, 255, 255, 0.95)',
-									backdropFilter: 'blur(10px)',
-									borderRadius: '12px',
-									boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-								}}
-							>
+						{/* Controls Container - Right Side */}
+						<Flex 
+							direction="column" 
+							gap="3" 
+							style={{ 
+								width: '320px',
+								background: 'rgba(255, 255, 255, 0.5)',
+								backdropFilter: 'blur(20px) saturate(180%)',
+								WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+								borderRadius: '12px',
+								padding: '16px',
+								boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+								border: '1px solid rgba(255, 255, 255, 0.3)',
+							}}
+						>
+							{/* Buttons at top */}
+							<Flex direction="column" gap="2">
 								<Button 
 									variant="soft" 
 									size="3"
 									onClick={handleTrim}
 									color={isTrimMode ? 'blue' : undefined}
-									style={{ cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
+									style={{ 
+										cursor: 'pointer', 
+										fontFamily: "'Inter', sans-serif",
+										width: '100%',
+										background: isTrimMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.6)',
+										backdropFilter: 'blur(10px)',
+									}}
 								>
 									<Scissors size={18} />
 									{isTrimMode ? 'Apply Trim' : 'Trim End'}
@@ -257,7 +256,13 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
 									size="3"
 									color="red"
 									onClick={handleDelete}
-									style={{ cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
+									style={{ 
+										cursor: 'pointer', 
+										fontFamily: "'Inter', sans-serif",
+										width: '100%',
+										background: 'rgba(239, 68, 68, 0.2)',
+										backdropFilter: 'blur(10px)',
+									}}
 								>
 									<Trash2 size={18} />
 									Delete
@@ -277,24 +282,27 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
 							</Box>
 
 							{/* Playback Controls */}
-							<Flex align="center" justify="center" gap="4">
+							<Flex direction="column" align="center" gap="3" style={{ marginTop: 'auto' }}>
 								<IconButton
 									size="4"
 									onClick={handlePlayPauseClick}
 									style={{ 
 										cursor: 'pointer',
-										background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-										color: 'white',
-										width: '64px',
-										height: '64px',
+										background: 'rgba(102, 126, 234, 0.2)',
+										backdropFilter: 'blur(10px)',
+										WebkitBackdropFilter: 'blur(10px)',
+										color: '#667eea',
+										width: '56px',
+										height: '56px',
 										borderRadius: '50%',
-										boxShadow: '0 4px 16px rgba(102, 126, 234, 0.4)',
+										boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+										border: '1px solid rgba(102, 126, 234, 0.3)',
 									}}
 								>
-									{isPlaying ? <Pause size={24} /> : <Play size={24} />}
+									{isPlaying ? <Pause size={22} /> : <Play size={22} />}
 								</IconButton>
 								<Text 
-									size="4" 
+									size="3" 
 									weight="medium"
 									style={{ 
 										fontFamily: "'SF Mono', 'Monaco', 'Menlo', monospace",

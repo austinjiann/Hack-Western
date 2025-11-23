@@ -45,8 +45,9 @@ const Timeline: FC<TimelineProps> = ({
 		// Always show start marker
 		timeMarkers.push(0);
 		
-		// Add markers every 10 seconds (reduced from 5)
-		for (let time = duration/20; time < duration; time += duration/20) {
+		// Add markers - reduce density based on duration
+		const markerInterval = duration > 60 ? duration / 4 : duration / 3; // 4 intervals for long videos, 3 for short
+		for (let time = markerInterval; time < duration; time += markerInterval) {
 			timeMarkers.push(time);
 		}
 		

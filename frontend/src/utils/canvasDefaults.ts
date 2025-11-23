@@ -221,8 +221,15 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
     { size: "m" },
   );
   addText(
-    "Mini walkthrough:\n1. Drop sketches or references inside the frame.\n2. Use arrows to describe motion or continuity.\n3. Click Generate to turn that frame into a video clip.",
+    "Mini walkthrough:\n1. Drop sketches or references inside the frame.\n2. Use arrows to describe motion or continuity.\n3. Click Generate to turn that frame into a video clip.\n4. Repeat again from step 1",
     leftColumnX,
+    topY + 110,
+    { size: "s" },
+  );
+
+  addText(
+    "Extra features:\n- Enhance image with one click\n- Trim video clips easily\n- Insert system prompts for camera controls or art direction\n- Global context for better continuity",
+    leftColumnX + 600,
     topY + 110,
     { size: "s" },
   );
