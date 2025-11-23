@@ -537,6 +537,30 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
                 }
             }]);
 
+            // Copy the image from the source frame to the new frame temporarily
+            const sourceFrameChildren = editor.getSortedChildIdsForParent(shapeId);
+            const sourceImageShape = sourceFrameChildren
+                .map(id => editor.getShape(id))
+                .find(shape => shape?.type === 'image');
+            
+            if (sourceImageShape && sourceImageShape.type === 'image') {
+                // Clone the image shape into the new frame
+                const clonedImageId = createShapeId();
+                const imageProps = sourceImageShape.props as { assetId: string; w: number; h: number };
+                editor.createShapes([{
+                    id: clonedImageId,
+                    type: 'image',
+                    x: sourceImageShape.x,
+                    y: sourceImageShape.y,
+                    parentId: newFrameId,
+                    props: {
+                        assetId: imageProps.assetId,
+                        w: imageProps.w,
+                        h: imageProps.h,
+                    },
+                }]);
+            }
+
             // Create an arrow connecting the frames
             const arrowId = createShapeId();
             editor.createShapes([{

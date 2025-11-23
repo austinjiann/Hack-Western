@@ -110,9 +110,9 @@ export const ArrowActionMenu = () => {
               }}
               onPointerDown={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-center px-4 py-2 bg-white rounded-lg shadow-lg border-2 border-black">
-                <Spinner size="2" />
-                <span className="ml-2 font-semibold">Generating... {arrowInfo.timer || 0}s</span>
+              <div className="flex items-center justify-center px-6 py-4 bg-white rounded-lg shadow-lg border-2 border-black">
+                <Spinner size="3" />
+                <span className="ml-3 font-semibold text-xl">Generating... {arrowInfo.timer || 0}s</span>
               </div>
             </div>
           );
