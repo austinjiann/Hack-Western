@@ -208,7 +208,7 @@ const DemoSection: React.FC = () => {
                           el.oncanplay = () => {
                             el.play()
                               .then(() => {
-                                el.muted = false;
+                                el.muted = true;
                               })
                               .catch(() => {
                                 el.muted = true;
