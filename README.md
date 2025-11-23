@@ -1,4 +1,4 @@
-# <img src="frontend/src/assets/images/logo.png" alt="FlowBoard Logo" width="40" height="40" style="vertical-align: middle;" /> FlowBoard
+# FlowBoard
 
 **Direct Your Video Frame by Frame**
 
