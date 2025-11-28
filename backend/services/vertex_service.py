@@ -12,7 +12,7 @@ class VertexService:
         )
         self.bucket_name = settings.GOOGLE_CLOUD_BUCKET_NAME
 
-    async def generate_video_content(self, prompt: str, image_data: bytes = None) -> GenerateVideosOperation:
+    async def generate_video_content(self, prompt: str, image_data: bytes = None, duration_seconds: int = 6) -> GenerateVideosOperation:
         # gen vid
         operation = self.client.models.generate_videos(
             model="veo-3.1-fast-generate-001",
@@ -23,7 +23,7 @@ class VertexService:
             ),
             config=GenerateVideosConfig(
                 aspect_ratio="16:9",
-                duration_seconds=6,
+                duration_seconds=duration_seconds,
                 output_gcs_uri=f"gs://{self.bucket_name}/videos/",
                 negative_prompt="text, annotations, low quality",
             ),

@@ -3,11 +3,13 @@ from blacksheep.server.controllers import APIController, post
 import json as pyjson
 
 from services.vertex_service import VertexService
+from services.supabase_service import SupabaseService
 
 class Gemini(APIController):
     
-    def __init__(self, vertex_service: VertexService):
+    def __init__(self, vertex_service: VertexService, supabase_service: SupabaseService):
         self.vertex_service = vertex_service
+        self.supabase_service = supabase_service
 
     @post("/extract-context")
     async def extract_context(self, request: Request):
@@ -67,6 +69,11 @@ class Gemini(APIController):
     @post("/image")
     async def generate_image(self, request: Request):
         try:
+            # get user token
+            user_id = request.scope.get("user_id") or self.supabase_service.get_user_id_from_request(request)
+            if not user_id:
+                return json({"error": "Unauthorized"}, status=401)
+
             files = await request.files()
             
             if not files:
@@ -79,6 +86,12 @@ class Gemini(APIController):
             res = await self.vertex_service.generate_image_content(
                 prompt=prompt,
                 image=image_data.data
+            )
+            
+            self.supabase_service.do_transaction(
+                user_id=user_id,
+                transaction_type="image_gen",
+                credit_usage=1 # TODO: adjust number later
             )
 
             return json({"image_bytes": res})

@@ -69,7 +69,7 @@ const DEFAULT_IMAGES = [
     rotation: 0.1,
   },
   // Profile pictures grouped on left with devpost and github
-   {
+  {
     url: "https://lh3.googleusercontent.com/a/ACg8ocKcV1LTfUxMro7BGePfJdnjhqbi7JxNVDOSUZuTjJgBdQ=s96-c?height=180&width=180",
     x: -700,
     y: 0,
@@ -152,7 +152,7 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
   if (!frame || frame.type !== "aspect-frame") {
     return;
   }
-  
+
   // Position tutorial content to the right of the frame
   const leftColumnX = 100; // Start after frame with gap
   const topY = -300; // Align with frame top
@@ -161,7 +161,13 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
   const seedMeta = { seedTag: SEED_META_TAG };
   const shapes: TLShapePartial[] = [];
 
-  const addText = (text: string, x: number, y: number, options?: TextOptions, scale?: number) => {
+  const addText = (
+    text: string,
+    x: number,
+    y: number,
+    options?: TextOptions,
+    scale?: number,
+  ) => {
     shapes.push({
       id: createShapeId(),
       type: "text",
@@ -174,7 +180,7 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
         font: options?.font ?? "draw",
         textAlign: "start",
         autoSize: true,
-        scale: scale??1,
+        scale: scale ?? 1,
         richText: toRichText(text),
       },
       meta: seedMeta,
@@ -184,7 +190,17 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
   const addGeo = (
     x: number,
     y: number,
-    { width, height, label, geo = "rectangle", stroke = "black", fill = "pattern", align = "start", verticalAlign = "start", dash = "draw" }: GeoOptions,
+    {
+      width,
+      height,
+      label,
+      geo = "rectangle",
+      stroke = "black",
+      fill = "pattern",
+      align = "start",
+      verticalAlign = "start",
+      dash = "draw",
+    }: GeoOptions,
   ) => {
     shapes.push({
       id: createShapeId(),
@@ -213,7 +229,7 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
     });
   };
 
-  addText("FlowBoard", leftColumnX, topY-60, { size: "xl" }, 2);
+  addText("FlowBoard", leftColumnX, topY - 60, { size: "xl" }, 2);
   addText(
     "Plan a shot by laying down a story frame, writing a prompt, and linking it to the next frame.",
     leftColumnX,
@@ -259,7 +275,7 @@ export function seedDefaultCanvas(editor: Editor, frameId?: TLShapeId | null) {
 
   timelineSteps.forEach((step, index) => {
     const cardX = timelineStartX + index * (cardWidth + cardGap);
-    addGeo(cardX, timelineY+100, {
+    addGeo(cardX, timelineY + 100, {
       width: cardWidth,
       height: cardHeight,
       label: `${step.title}\n${step.detail}`,

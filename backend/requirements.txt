@@ -6,4 +6,6 @@ pydantic-settings
 google-cloud-storage
 google-cloud-core
 redis
+supabase
+blosc
 httpx

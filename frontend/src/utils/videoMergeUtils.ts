@@ -1,13 +1,4 @@
-/**
- * Client-side video merging utility
- * Merges multiple video clips into a single video using browser APIs
- */
-
-export interface VideoClip {
-  videoUrl: string;
-  trimEnd?: number; // Optional trim end time in seconds
-  duration?: number; // Full duration of the video
-}
+import { VideoClip } from "../types/types";
 
 /**
  * Merges multiple video clips into a single video blob
@@ -17,7 +8,7 @@ export interface VideoClip {
  */
 export async function mergeVideosClient(
   clips: VideoClip[],
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<Blob> {
   if (clips.length === 0) {
     throw new Error("No clips provided");
@@ -47,7 +38,8 @@ export async function mergeVideosClient(
         maxHeight = Math.max(maxHeight, video.videoHeight);
         resolve();
       };
-      video.onerror = () => reject(new Error(`Failed to load video: ${clip.videoUrl}`));
+      video.onerror = () =>
+        reject(new Error(`Failed to load video: ${clip.videoUrl}`));
     });
 
     videos.push(video);
@@ -74,9 +66,9 @@ export async function mergeVideosClient(
     mediaRecorder.onstop = () => {
       const blob = new Blob(chunks, { type: "video/webm" });
       // Cleanup
-      videos.forEach(v => {
+      videos.forEach((v) => {
         v.pause();
-        v.src = '';
+        v.src = "";
       });
       resolve(blob);
     };
@@ -103,25 +95,28 @@ export async function mergeVideosClient(
 
       const clip = clips[index];
       const video = videos[index];
-      const trimEnd = clip.trimEnd !== undefined ? clip.trimEnd : (clip.duration || video.duration);
+      const trimEnd =
+        clip.trimEnd !== undefined
+          ? clip.trimEnd
+          : clip.duration || video.duration;
 
       try {
         // Load and seek to start
         video.currentTime = 0;
         await new Promise<void>((resolve, reject) => {
           const onCanPlay = () => {
-            video.removeEventListener('canplay', onCanPlay);
-            video.removeEventListener('error', onError);
+            video.removeEventListener("canplay", onCanPlay);
+            video.removeEventListener("error", onError);
             resolve();
           };
           const onError = () => {
-            video.removeEventListener('canplay', onCanPlay);
-            video.removeEventListener('error', onError);
+            video.removeEventListener("canplay", onCanPlay);
+            video.removeEventListener("error", onError);
             reject(new Error(`Failed to load video: ${clip.videoUrl}`));
           };
-          video.addEventListener('canplay', onCanPlay);
-          video.addEventListener('error', onError);
-          
+          video.addEventListener("canplay", onCanPlay);
+          video.addEventListener("error", onError);
+
           // If already loaded, resolve immediately
           if (video.readyState >= 2) {
             setTimeout(() => resolve(), 0);
@@ -131,12 +126,9 @@ export async function mergeVideosClient(
         // Play the video
         await video.play();
 
-        // const startTime = Date.now();
-        // const clipDuration = trimEnd * 1000; // Convert to milliseconds
-
         const drawFrame = () => {
           const currentTime = video.currentTime;
-          
+
           // Check if we've reached the trim end or video ended
           if (video.ended || currentTime >= trimEnd) {
             // Clip finished, move to next
@@ -182,7 +174,10 @@ export async function convertToMP4(blob: Blob): Promise<Blob> {
  * @param blob Video blob to download
  * @param filename Optional filename (default: merged-video.webm)
  */
-export function downloadVideo(blob: Blob, filename: string = "merged-video.webm") {
+export function downloadVideo(
+  blob: Blob,
+  filename: string = "merged-video.webm",
+) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -192,4 +187,3 @@ export function downloadVideo(blob: Blob, filename: string = "merged-video.webm"
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-

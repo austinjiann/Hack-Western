@@ -7,12 +7,14 @@ from google.genai.types import GenerateVideosOperation
 class VideoGenerationInput:
     custom_prompt: str
     global_context: str
+    duration_seconds: int = 6
 
 @dataclass
 class VideoJobRequest:
     starting_image: bytes
     global_context: str
     custom_prompt: str
+    duration_seconds: int = 6
 
 @dataclass
 class JobStatus:
