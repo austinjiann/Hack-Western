@@ -32,11 +32,10 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
   const [isImproving, setIsImproving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check if this specific shape is selected
   const isSelected = useValue(
     "is selected",
     () => editor.getSelectedShapeIds().includes(shapeId),
-    [editor, shapeId],
+    [editor, shapeId]
   );
 
   const frame = useValue("frame", () => editor.getShape(shapeId), [
@@ -46,24 +45,20 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
   if (!frame) return null;
 
-  // Show toolbar only when selected
   const showToolbar = isSelected;
-
-  // Show text box when selected OR when it has content
   const showTextBox = isSelected || promptText.trim() !== "";
 
   const handleBackgroundColorChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     e.stopPropagation();
-    const color = e.target.value;
     editor.updateShapes([
       {
         id: shapeId,
         type: "aspect-frame",
         props: {
           ...frame.props,
-          backgroundColor: color,
+          backgroundColor: e.target.value,
         },
       },
     ]);
@@ -73,21 +68,17 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     e.stopPropagation();
     const file = e.target.files?.[0];
     if (!file || !frame) {
-      // Reset the input if no file selected
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
-
       const img = new Image();
+
       img.onload = () => {
         const assetId = AssetRecordType.createId();
-
         const asset: TLImageAsset = {
           id: assetId,
           type: "image",
@@ -105,16 +96,15 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
         editor.createAssets([asset]);
 
-        // Get frame dimensions
         const frameW = "w" in frame.props ? (frame.props.w as number) : 960;
         const frameH = "h" in frame.props ? (frame.props.h as number) : 540;
 
-        // Scale image to fit within the frame (contain mode - maintain aspect ratio, fit entirely within frame)
+        // Scale image to fit within frame while maintaining aspect ratio
         const scale = Math.min(frameW / img.width, frameH / img.height);
         const scaledW = img.width * scale;
         const scaledH = img.height * scale;
 
-        // Center the image within the frame (using relative coordinates since it's a child)
+        // Center image within frame (relative coordinates as child of frame)
         const x = (frameW - scaledW) / 2;
         const y = (frameH - scaledH) / 2;
 
@@ -124,7 +114,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
           type: "image",
           x,
           y,
-          parentId: frame.id, // Make it a child of the frame (uses relative coordinates)
+          parentId: frame.id,
           props: {
             assetId,
             w: scaledW,
@@ -133,27 +123,133 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         };
 
         editor.createShapes([shape]);
-
-        // Reset the input after successful upload
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
       };
+
       img.onerror = () => {
         console.error("Failed to load image");
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
+        if (fileInputRef.current) fileInputRef.current.value = "";
       };
       img.src = dataUrl;
     };
+
     reader.onerror = () => {
       console.error("Failed to read file");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     };
     reader.readAsDataURL(file);
+  };
+
+  const processBase64ImageData = (imageBytes: any): string => {
+    let base64String: string;
+
+    if (Array.isArray(imageBytes)) {
+      // Convert byte array to base64
+      const bytes = new Uint8Array(imageBytes);
+      const binaryString = Array.from(bytes, (byte) =>
+        String.fromCharCode(byte)
+      ).join("");
+      base64String = btoa(binaryString);
+    } else if (typeof imageBytes === "string") {
+      // Extract base64 from data URL if present
+      if (imageBytes.startsWith("data:image/")) {
+        const commaIndex = imageBytes.indexOf(",");
+        base64String =
+          commaIndex !== -1
+            ? imageBytes.substring(commaIndex + 1)
+            : imageBytes;
+      } else {
+        base64String = imageBytes;
+      }
+
+      // Clean whitespace
+      let cleanedBase64 = base64String.replace(/[\s\r\n\t]/g, "");
+
+      // Convert base64url to standard base64 if needed
+      if (cleanedBase64.includes("_") || cleanedBase64.includes("-")) {
+        cleanedBase64 = cleanedBase64.replace(/-/g, "+").replace(/_/g, "/");
+        const paddingNeeded = (4 - (cleanedBase64.length % 4)) % 4;
+        if (paddingNeeded > 0) {
+          cleanedBase64 += "=".repeat(paddingNeeded);
+        }
+      }
+
+      // Validate and fix padding
+      let canDecode = false;
+      try {
+        atob(cleanedBase64.substring(0, Math.min(100, cleanedBase64.length)));
+        canDecode = true;
+      } catch (e) {
+        // Will clean below
+      }
+
+      if (canDecode) {
+        const paddingNeeded = (4 - (cleanedBase64.length % 4)) % 4;
+        if (paddingNeeded > 0 && paddingNeeded < 4) {
+          cleanedBase64 += "=".repeat(paddingNeeded);
+        }
+        try {
+          atob(cleanedBase64);
+          base64String = cleanedBase64;
+        } catch (e) {
+          canDecode = false;
+        }
+      }
+
+      // Remove invalid characters if decode failed
+      if (!canDecode) {
+        let testBase64 = cleanedBase64.replace(/[^A-Za-z0-9+/=]/g, "");
+        const paddingNeeded = (4 - (testBase64.length % 4)) % 4;
+        if (paddingNeeded > 0 && paddingNeeded < 4) {
+          testBase64 += "=".repeat(paddingNeeded);
+        }
+
+        try {
+          atob(testBase64.substring(0, Math.min(10000, testBase64.length)));
+          atob(testBase64);
+          base64String = testBase64;
+        } catch (e) {
+          throw new Error("Could not create valid base64 from response");
+        }
+      }
+    } else {
+      throw new Error(
+        `Invalid image data format: ${typeof imageBytes}. Expected array or string.`
+      );
+    }
+
+    if (!base64String || base64String.length === 0) {
+      throw new Error("Base64 string is empty after processing");
+    }
+
+    // Validate base64 can be decoded
+    try {
+      atob(base64String);
+      return `data:image/png;base64,${base64String}`;
+    } catch (decodeError) {
+      throw new Error("Invalid base64 string - cannot decode image data");
+    }
+  };
+
+  const validateImageLoad = async (
+    dataUrl: string
+  ): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const timeout = setTimeout(() => {
+        reject(new Error("Image load timeout - data may be corrupted"));
+      }, 10000);
+
+      img.onload = () => {
+        clearTimeout(timeout);
+        resolve(img);
+      };
+      img.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error("Failed to load image - invalid image data"));
+      };
+      img.src = dataUrl;
+    });
   };
 
   const handleImprove = async (e: React.MouseEvent) => {
@@ -164,32 +260,27 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
     setIsImproving(true);
 
-    // Store loading state in frame meta so FrameShape can access it
+    // Store loading state in frame meta
     editor.updateShapes([
       {
         id: shapeId,
         type: "aspect-frame",
-        meta: {
-          ...currentFrame.meta,
-          isImproving: true,
-        },
+        meta: { ...currentFrame.meta, isImproving: true },
       },
     ]);
 
-    // Disable editor interactions while improving
+    // Disable editor during export
     editor.updateInstanceState({ isReadonly: true });
 
     try {
-      // Deselect the shape so the toolbar is not captured in the image
+      // Deselect to avoid capturing toolbar in image
       editor.selectNone();
 
-      // Get frame dimensions
       const frameW =
         "w" in currentFrame.props ? (currentFrame.props.w as number) : 960;
       const frameH =
         "h" in currentFrame.props ? (currentFrame.props.h as number) : 540;
 
-      // Export frame as image (readonly prevents user interaction during export)
       const { blob } = await editor.toImage([shapeId], {
         format: "png",
         scale: 1,
@@ -197,10 +288,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         padding: 0,
       });
 
-      // Reselect the shape
       editor.select(shapeId);
-
-      // Disable readonly now that export is done - we need to be able to delete/create shapes
       editor.updateInstanceState({ isReadonly: false });
 
       if (!blob) {
@@ -214,11 +302,9 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       const formData = new FormData();
       formData.append("image", blob, "frame.png");
 
-      // Call the improve image API (nanobanana)
       const response = await apiFetch(`${backend_url}/api/gemini/image`, {
         method: "POST",
         body: formData,
-        
       });
 
       if (!response.ok) {
@@ -231,175 +317,11 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         throw new Error("No image data returned from server");
       }
 
-      // Handle bytes from backend - convert to base64
-      let imageDataUrl: string;
-      const imageBytes = result.image_bytes;
+      // Process and validate image data
+      const imageDataUrl = processBase64ImageData(result.image_bytes);
+      const img = await validateImageLoad(imageDataUrl);
 
-      let base64String: string;
-
-      try {
-        if (Array.isArray(imageBytes)) {
-          // Backend sent bytes as array of numbers, convert to base64
-          const bytes = new Uint8Array(imageBytes);
-          // Convert bytes to base64
-          const binaryString = Array.from(bytes, (byte) =>
-            String.fromCharCode(byte),
-          ).join("");
-          base64String = btoa(binaryString);
-        } else if (typeof imageBytes === "string") {
-          // Check if it's already a data URL
-          if (imageBytes.startsWith("data:image/")) {
-            // Extract just the base64 part
-            const commaIndex = imageBytes.indexOf(",");
-            if (commaIndex !== -1) {
-              base64String = imageBytes.substring(commaIndex + 1);
-            } else {
-              base64String = imageBytes;
-            }
-          } else {
-            // It's already a base64 string
-            base64String = imageBytes;
-          }
-          // First, just remove whitespace
-          let cleanedBase64 = base64String.replace(/[\s\r\n\t]/g, "");
-
-          // Check if it's base64url (contains _ or -) and convert to standard base64
-          if (cleanedBase64.includes("_") || cleanedBase64.includes("-")) {
-            // Convert base64url to standard base64: - becomes +, _ becomes /
-            cleanedBase64 = cleanedBase64.replace(/-/g, "+").replace(/_/g, "/");
-            // Fix padding (base64url doesn't use = padding, but standard base64 does)
-            const paddingNeeded = (4 - (cleanedBase64.length % 4)) % 4;
-            if (paddingNeeded > 0) {
-              cleanedBase64 += "=".repeat(paddingNeeded);
-            }
-          }
-
-          // Try to decode it as-is first
-          let canDecode = false;
-          try {
-            // Test if it can be decoded
-            atob(
-              cleanedBase64.substring(0, Math.min(100, cleanedBase64.length)),
-            );
-            // If we get here, at least the start is valid
-            canDecode = true;
-          } catch (e) {
-            // Will clean below
-          }
-
-          // If initial test passed, try the full string with padding fix
-          if (canDecode) {
-            // Fix padding if needed
-            const paddingNeeded = (4 - (cleanedBase64.length % 4)) % 4;
-            if (paddingNeeded > 0 && paddingNeeded < 4) {
-              cleanedBase64 += "=".repeat(paddingNeeded);
-            }
-            // Try full decode
-            try {
-              atob(cleanedBase64);
-              base64String = cleanedBase64;
-            } catch (e) {
-              canDecode = false;
-            }
-          }
-
-          // Only clean invalid characters if decode failed
-          if (!canDecode) {
-            // Find invalid characters and their positions (sample first 1000 chars)
-            const invalidChars = new Set<string>();
-            const invalidPositions: number[] = [];
-            for (let i = 0; i < Math.min(1000, cleanedBase64.length); i++) {
-              const char = cleanedBase64[i];
-              if (!/[A-Za-z0-9+/=]/.test(char)) {
-                invalidChars.add(char);
-                invalidPositions.push(i);
-              }
-            }
-
-            // Remove invalid characters
-            let testBase64 = cleanedBase64.replace(/[^A-Za-z0-9+/=]/g, "");
-            const removedCount = cleanedBase64.length - testBase64.length;
-
-            const paddingNeeded = (4 - (testBase64.length % 4)) % 4;
-            if (paddingNeeded > 0 && paddingNeeded < 4) {
-              testBase64 += "=".repeat(paddingNeeded);
-            }
-
-            try {
-              const testChunk = testBase64.substring(
-                0,
-                Math.min(10000, testBase64.length),
-              );
-              atob(testChunk);
-              // If chunk test passes, try full decode
-              try {
-                atob(testBase64);
-                base64String = testBase64;
-              } catch (fullError) {
-                base64String = testBase64;
-              }
-            } catch (e) {
-              throw new Error(
-                `Could not create valid base64 from response. Removed ${removedCount} invalid characters.`,
-              );
-            }
-          }
-        } else {
-          throw new Error(
-            `Invalid image data format: ${typeof imageBytes}. Expected array of bytes or base64 string.`,
-          );
-        }
-
-        // Validate base64 string format
-        if (!base64String || base64String.length === 0) {
-          throw new Error("Base64 string is empty after processing");
-        }
-
-        // Use data URL (consistent with other image handling in the codebase)
-        // First validate the base64 can decode
-        try {
-          // Test decode to ensure it's valid
-          atob(base64String);
-          imageDataUrl = `data:image/png;base64,${base64String}`;
-        } catch (decodeError) {
-          throw new Error("Invalid base64 string - cannot decode image data");
-        }
-      } catch (error) {
-        throw new Error(
-          `Failed to process image data: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-      }
-
-      // Validate the image loads correctly before creating the asset
-      await new Promise<void>((resolve, reject) => {
-        const img = new Image();
-        const timeout = setTimeout(() => {
-          reject(
-            new Error("Image load timeout - the image data may be corrupted"),
-          );
-        }, 10000);
-
-        img.onload = () => {
-          clearTimeout(timeout);
-          resolve();
-        };
-        img.onerror = () => {
-          clearTimeout(timeout);
-          reject(
-            new Error("Failed to load improved image - invalid image data"),
-          );
-        };
-        img.src = imageDataUrl;
-      });
-
-      // Get actual image dimensions
-      const img = new Image();
-      await new Promise<void>((resolve) => {
-        img.onload = () => resolve();
-        img.src = imageDataUrl;
-      });
-
-      // Create image asset from improved image
+      // Create asset from improved image
       const assetId = AssetRecordType.createId();
       const asset: TLImageAsset = {
         id: assetId,
@@ -416,10 +338,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         meta: {},
       };
 
-      // Get child shapes to replace BEFORE creating new asset
+      // Delete existing children before creating new content
       const childIds = editor.getSortedChildIdsForParent(shapeId);
+      if (childIds.length > 0) {
+        editor.deleteShapes(childIds);
+      }
 
-      // Create new image shape with improved image
+      // Create new image shape
       const imageShapeId = createShapeId();
       const scale = Math.min(frameW / img.width, frameH / img.height);
       const scaledW = img.width * scale;
@@ -440,46 +365,31 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         },
       };
 
-      // Delete existing children first (before creating new asset/shape)
-      if (childIds.length > 0) {
-        editor.deleteShapes(childIds);
-      }
-
-      // Create new asset
       editor.createAssets([asset]);
-
-      // Create new image shape
       editor.createShapes([imageShape]);
 
       setIsImproving(false);
-      // Clear loading state from frame meta
       editor.updateShapes([
         {
           id: shapeId,
           type: "aspect-frame",
-          meta: {
-            ...editor.getShape(shapeId)?.meta,
-            isImproving: false,
-          },
+          meta: { ...editor.getShape(shapeId)?.meta, isImproving: false },
         },
       ]);
       editor.updateInstanceState({ isReadonly: false });
     } catch (error) {
       toast.error(
-        `Failed to improve frame: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to improve frame: ${error instanceof Error ? error.message : "Unknown error"}`
       );
       setIsImproving(false);
-      // Clear loading state from frame meta
+
       const errorFrame = editor.getShape(shapeId);
       if (errorFrame) {
         editor.updateShapes([
           {
             id: shapeId,
             type: "aspect-frame",
-            meta: {
-              ...errorFrame.meta,
-              isImproving: false,
-            },
+            meta: { ...errorFrame.meta, isImproving: false },
           },
         ]);
       }
@@ -515,15 +425,14 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     setNameValue("");
   };
 
-    // Count arrows that start from this frame (for tree branching)
-    const getExistingBranchCount = (frameId: TLShapeId): number => {
-        const bindings = editor.getBindingsToShape(frameId, 'arrow');
-        // Filter for bindings where this frame is the "start" terminal
-        return bindings.filter(b => {
-            const props = b.props as { terminal?: string };
-            return props.terminal === 'start';
-        }).length;
-    };
+  // Count arrows that start from this frame (for tree branching)
+  const getExistingBranchCount = (frameId: TLShapeId): number => {
+    const bindings = editor.getBindingsToShape(frameId, "arrow");
+    return bindings.filter((b) => {
+      const props = b.props as { terminal?: string };
+      return props.terminal === "start";
+    }).length;
+  };
 
   const handleGenerate = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -531,10 +440,9 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     const currentFrame = editor.getShape(shapeId);
     if (!currentFrame) return;
 
-    // Deselect the shape so the toolbar is not captured in the image
+    // Deselect to avoid capturing toolbar
     editor.selectNone();
 
-    // Get frame dimensions
     const frameW =
       "w" in currentFrame.props ? (currentFrame.props.w as number) : 960;
     const frameH =
@@ -547,17 +455,15 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       padding: 0,
     });
 
-    // Reselect the shape
     editor.select(shapeId);
 
     const backend_url = import.meta.env.VITE_BACKEND_URL || "";
 
     const formData = new FormData();
-
     formData.append("custom_prompt", promptText);
     formData.append(
       "global_context",
-      JSON.stringify(context?.sceneState ?? {}),
+      JSON.stringify(context?.sceneState ?? {})
     );
     formData.append("files", blob);
 
@@ -579,13 +485,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       const jobId = jsonObj.job_id;
       const pageId = editor.getCurrentPageId();
 
-      // Create a new frame to the right (with vertical offset for branching)
+      // Create new frame with vertical offset for branching
       const newFrameId = createShapeId();
       const gap = 2000;
-            const branchCount = getExistingBranchCount(shapeId);
-            const verticalGap = frameH + 200; // Space between stacked frames
+      const branchCount = getExistingBranchCount(shapeId);
+      const verticalGap = frameH + 200;
       const newFrameX = currentFrame.x + frameW + gap;
-      const newFrameY = currentFrame.y + (branchCount * verticalGap);
+      const newFrameY = currentFrame.y + branchCount * verticalGap;
 
       editor.createShapes([
         {
@@ -602,14 +508,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         },
       ]);
 
-      // Copy the image from the source frame to the new frame temporarily
+      // Clone source image to new frame temporarily
       const sourceFrameChildren = editor.getSortedChildIdsForParent(shapeId);
       const sourceImageShape = sourceFrameChildren
         .map((id) => editor.getShape(id))
         .find((shape) => shape?.type === "image");
 
       if (sourceImageShape && sourceImageShape.type === "image") {
-        // Clone the image shape into the new frame
         const clonedImageId = createShapeId();
         const imageProps = sourceImageShape.props as {
           assetId: string;
@@ -632,7 +537,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         ]);
       }
 
-      // Create an arrow connecting the frames
+      // Create arrow connecting frames
       const arrowId = createShapeId();
       editor.createShapes([
         {
@@ -654,23 +559,17 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         type: "arrow",
         fromId: arrowId,
         toId: shapeId,
-        props: {
-          terminal: "start",
-          isPrecise: true,
-        },
+        props: { terminal: "start", isPrecise: true },
       });
 
       editor.createBinding({
         type: "arrow",
         fromId: arrowId,
         toId: newFrameId,
-        props: {
-          terminal: "end",
-          isPrecise: true,
-        },
+        props: { terminal: "end", isPrecise: true },
       });
 
-      // Store job metadata in arrow's meta field
+      // Store job metadata in arrow
       editor.updateShapes([
         {
           id: arrowId,
@@ -699,11 +598,10 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
   const isLocked =
     "isLocked" in frame.props ? (frame.props.isLocked as boolean) : false;
 
-  // Scale text box size based on frame width
+  // Scale text box based on frame dimensions
   const textBoxWidth = frameWidth;
   const fontSize = Math.max(14, Math.min(frameWidth * 0.025, 24));
 
-  // Toggle lock state for frame content
   const handleToggleLock = (e: React.MouseEvent) => {
     e.stopPropagation();
     editor.updateShapes([
@@ -719,9 +617,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
   return (
     <>
-      {/* Loading overlay for improve frame operation */}
-
-      {/* Toolbar above the frame */}
+      {/* Toolbar above frame */}
       {showToolbar && (
         <div
           className="absolute -top-28 left-1/2 -translate-x-1/2 pointer-events-auto z-50"
@@ -772,33 +668,30 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
 
             {/* Background Color */}
             <Tooltip content="Change Background">
-              <div style={{ position: "relative", display: "inline-block" }}>
-                <Button
-                  variant="soft"
-                  size="3"
-                  style={{
-                    cursor: "pointer",
-                    position: "relative",
-                    minWidth: "48px",
-                    minHeight: "48px",
-                  }}
-                  onClick={() => {
-                    const input = document.createElement("input");
-                    input.type = "color";
-                    input.value = backgroundColor;
-                    input.onchange = (e) => {
-                      const target = e.target as HTMLInputElement;
-                      handleBackgroundColorChange({
-                        target,
-                        stopPropagation: () => {},
-                      } as any);
-                    };
-                    input.click();
-                  }}
-                >
-                  <Palette size={40} />
-                </Button>
-              </div>
+              <Button
+                variant="soft"
+                size="3"
+                style={{
+                  cursor: "pointer",
+                  minWidth: "48px",
+                  minHeight: "48px",
+                }}
+                onClick={() => {
+                  const input = document.createElement("input");
+                  input.type = "color";
+                  input.value = backgroundColor;
+                  input.onchange = (e) => {
+                    const target = e.target as HTMLInputElement;
+                    handleBackgroundColorChange({
+                      target,
+                      stopPropagation: () => {},
+                    } as any);
+                  };
+                  input.click();
+                }}
+              >
+                <Palette size={40} />
+              </Button>
             </Tooltip>
 
             {/* Upload Image */}
@@ -839,7 +732,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
               </div>
             </Tooltip>
 
-            {/* Generate (existing functionality) */}
+            {/* Generate Next Frame */}
             <Tooltip content="Generate Next Frame">
               <Button
                 variant="soft"
@@ -856,6 +749,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
               </Button>
             </Tooltip>
 
+            {/* Improve Frame */}
             <Tooltip content="Improve Frame">
               <Button
                 variant="soft"
@@ -896,7 +790,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         </div>
       )}
 
-      {/* Prompt Text Box - appears below the frame */}
+      {/* Prompt text box below frame */}
       {showTextBox && (
         <div
           className="absolute pointer-events-auto z-50"

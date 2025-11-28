@@ -131,7 +131,6 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
             }
           }}
           onPointerDown={(_e) => {
-            void _e;
             this.editor.select(shape.id);
           }}
         />
@@ -179,7 +178,6 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
   }
 
   override canResize(_shape: IFrameShape) {
-    void _shape;
     return false;
   }
 
@@ -197,7 +195,6 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
   }
 
   override canResizeChildren(_shape: IFrameShape) {
-    void _shape;
     return true;
   }
 }

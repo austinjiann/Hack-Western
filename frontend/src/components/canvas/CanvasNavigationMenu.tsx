@@ -9,7 +9,7 @@ export const CanvasNavigationMenu: React.FC = () => {
 
   const menuItems = [
     {
-      label: "Homepage",
+      label: "Home",
       icon: Home,
       path: "/",
       onClick: () => {
@@ -59,7 +59,7 @@ export const CanvasNavigationMenu: React.FC = () => {
                     onClick={item.onClick}
                     className="flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 cursor-pointer group"
                   >
-                    <Icon className="w-5 h-5 text-gray-500 group-hover:text-brand-indigo transition-colors" />
+                    <Icon className="w-5 h-5 text-gray-500 group-hover:text-brand-pink transition-colors" />
                     <span className="font-medium">{item.label}</span>
                   </button>
                 </Dialog.Close>

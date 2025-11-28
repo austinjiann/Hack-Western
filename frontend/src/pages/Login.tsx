@@ -70,7 +70,7 @@ function Login() {
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]"></div>
 
         {/* Gradient Blur Effect */}
-        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-indigo/10 rounded-full blur-[200px] -z-10 pointer-events-none" />
+        <div className="absolute top-[20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-pink/10 rounded-full blur-[200px] -z-10 pointer-events-none" />
         <div className="absolute bottom-[20%] right-1/4 w-[500px] h-[500px] bg-brand-pink/10 rounded-full blur-[200px] -z-10 pointer-events-none" />
 
         <div className="relative z-10">
@@ -81,8 +81,8 @@ function Login() {
               {/* Login Card */}
               <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
                 <div className="text-center mb-8">
-                  <div className="inline-flex p-4 bg-brand-indigo/10 rounded-2xl mb-4">
-                    <LogIn className="w-8 h-8 text-brand-indigo" />
+                  <div className="inline-flex p-4 bg-brand-pink/10 rounded-2xl mb-4">
+                    <LogIn className="w-8 h-8 text-brand-pink" />
                   </div>
                   <h1 className="text-4xl font-normal text-gray-900 mb-2 font-ananda">
                     Welcome Back
@@ -111,7 +111,7 @@ function Login() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="w-full pl-12 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-indigo/50 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                        className="w-full pl-12 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-pink/50 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
                         placeholder="you@example.com"
                       />
                     </div>
@@ -135,7 +135,7 @@ function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="w-full pl-12 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-indigo/50 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
+                        className="w-full pl-12 pr-4 py-3 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-pink/50 focus:border-transparent transition-all text-gray-900 placeholder-gray-400"
                         placeholder="Enter your password"
                       />
                     </div>
@@ -145,7 +145,7 @@ function Login() {
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className="text-sm text-brand-indigo hover:text-brand-purple transition-colors font-medium"
+                      className="text-sm text-brand-pink hover:text-brand-purple transition-colors font-medium"
                     >
                       Forgot password?
                     </button>

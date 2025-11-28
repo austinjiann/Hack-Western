@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import tsParser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 
@@ -8,11 +9,14 @@ export default defineConfig([
   {
     ignores: ["dist/**", "node_modules/**"],
   },
+
   js.configs.recommended,
-  ...tseslint.configs.recommended,
+
+  tseslint.configs.recommended,
   {
-    files: ["**/*.{js,ts}"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
+      parser: tsParser,
       globals: {
         ...globals.node,
       },
@@ -22,6 +26,5 @@ export default defineConfig([
     },
   },
 
-  // Prettier should be last to override formatting rules
   eslintConfigPrettier,
 ]);

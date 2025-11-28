@@ -179,7 +179,7 @@ const Navbar: React.FC = () => {
                       <Dialog.Close key={item.label} asChild>
                         <a
                           href={item.href}
-                          className="text-lg font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                          className="text-lg font-medium text-gray-600 hover:text-brand-pink transition-colors"
                         >
                           {item.label}
                         </a>
