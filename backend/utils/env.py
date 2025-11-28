@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     GOOGLE_CLOUD_BUCKET_NAME: str
     REDIS_URL: str
     SUPABASE_URL: str
-    SUPABASE_KEY: str
+    SUPABASE_SECRET_KEY: str
     AUTUMN_SECRET_KEY: str
     model_config = SettingsConfigDict(
         env_file=".env",

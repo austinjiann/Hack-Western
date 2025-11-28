@@ -8,7 +8,7 @@ from blacksheep import Request
 class SupabaseService:
     def __init__(self):
         self.supabase: Client = create_client(
-            settings.SUPABASE_URL, settings.SUPABASE_KEY
+            settings.SUPABASE_URL, settings.SUPABASE_SECRET_KEY
         )
     
     def get_user_id_from_token(self, token: str) -> Optional[str]:

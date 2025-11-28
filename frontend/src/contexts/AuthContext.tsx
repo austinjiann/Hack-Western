@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     // Check if Supabase is properly configured
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "";
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLIC_KEY || "";
 
     if (!supabaseUrl || !supabaseAnonKey || !supabase) {
       // If Supabase is not configured, just set loading to false
