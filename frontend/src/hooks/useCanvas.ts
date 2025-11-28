@@ -343,21 +343,6 @@ export const useCanvas = () => {
       if (prev.pageId !== next.pageId) {
         setTimeout(() => ensureTutorialLayout(editor, { immediate: true }), 0);
       }
-      const nextSelected = next.selectedShapeIds;
-      const prevSelected = prev.selectedShapeIds;
-      
-      // Only act if selection changed
-      if (nextSelected.length === 1 && nextSelected[0] !== prevSelected[0]) {
-        const selectedId = nextSelected[0];
-        const shape = editor.getShape(selectedId);
-        if (shape && shape.parentId) {
-          const parent = editor.getShape(shape.parentId);
-          if (parent && parent.type === 'aspect-frame') {
-            // Select the parent frame instead of the child
-            setTimeout(() => editor.select(parent.id), 0);
-          }
-        }
-      }
       return next;
     });
 

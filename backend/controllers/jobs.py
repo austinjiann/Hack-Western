@@ -1,11 +1,13 @@
 from blacksheep import json, Response, Request, FromForm
 from blacksheep.server.controllers import APIController, post, get
+from services.supabase_service import SupabaseService
 from models.job import VideoJobRequest, VideoGenerationInput
 from services.job_service import JobService
 
 class Jobs(APIController):
-    def __init__(self, job_service: JobService):
+    def __init__(self, job_service: JobService, supabase_service: SupabaseService):
         self.job_service = job_service
+        self.supabase_service = supabase_service
 
     @post("/video")
     async def add_video_job(self, request: Request, input: FromForm[VideoGenerationInput]):
@@ -14,6 +16,10 @@ class Jobs(APIController):
         Input: starting image (file), context, any other user-prompt
         Return: jobId
         """
+        user_id = request.scope.get("user_id") or self.supabase_service.get_user_id_from_request(request)
+        if not user_id:
+            return json({"error": "Unauthorized"}, status=401)
+
         # FromForm parses the body, so request.files should be populated if multipart
         # request.files is a method that returns the list of files
         files = await request.files()
@@ -27,6 +33,12 @@ class Jobs(APIController):
             starting_image=image_file.data,
             global_context=input.value.global_context,
             custom_prompt=input.value.custom_prompt
+        )
+
+        self.supabase_service.do_transaction(
+            user_id=user_id,
+            transaction_type="video_gen",
+            credit_usage=10 # TODO: adjust number later
         )
         
         job_id = await self.job_service.create_video_job(data)
@@ -52,6 +64,11 @@ class Jobs(APIController):
     # DEV MOCK ENDPOINTS
     @post("/video/mock")
     async def add_video_job_mock(self, request: Request, input: FromForm[VideoGenerationInput]):
+
+        user_id = request.scope.get("user_id") or self.supabase_service.get_user_id_from_request(request)
+        if not user_id:
+            return json({"error": "Unauthorized"}, status=401)
+        
         # validate input
         files = await request.files()
         
@@ -65,8 +82,13 @@ class Jobs(APIController):
             global_context=input.value.global_context,
             custom_prompt=input.value.custom_prompt
         )
-        
-        #just return random stuff
+
+        self.supabase_service.do_transaction(
+            user_id=user_id,
+            transaction_type="video_gen",
+            credit_usage=10 # TODO: adjust number later
+        )
+        # just return random stuff
         return json({"job_id": "mock-job-id"})
 
     @get("/video/mock/{job_id}")
