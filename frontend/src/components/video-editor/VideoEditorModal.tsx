@@ -37,7 +37,7 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
   const videoElementRef = useRef<HTMLVideoElement>(null);
   const [isTrimMode, setIsTrimMode] = useState(false);
   const [tempTrimEnd, setTempTrimEnd] = useState<number | undefined>(
-    videoClip.trimEnd
+    videoClip.trimEnd,
   );
 
   // Calculate effective duration (accounting for trim end only)
@@ -92,12 +92,12 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
           ? tempTrimEnd
           : actualDuration
         : videoClip.trimEnd !== undefined
-        ? videoClip.trimEnd
-        : actualDuration;
+          ? videoClip.trimEnd
+          : actualDuration;
       const clampedTime = Math.max(0, Math.min(time, maxTime));
       setCurrentTime(clampedTime);
     },
-    [isTrimMode, tempTrimEnd, videoClip.trimEnd, actualDuration]
+    [isTrimMode, tempTrimEnd, videoClip.trimEnd, actualDuration],
   );
 
   const handlePlayPauseClick = () => {
@@ -220,8 +220,8 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
                   const maxTime = isTrimMode
                     ? actualDuration // Allow full playback in trim mode
                     : videoClip.trimEnd !== undefined
-                    ? videoClip.trimEnd
-                    : actualDuration;
+                      ? videoClip.trimEnd
+                      : actualDuration;
                   const clampedTime = Math.min(time, maxTime);
                   setCurrentTime(clampedTime);
                 }}
@@ -332,7 +332,7 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
                   {formatTime(
                     isTrimMode && tempTrimEnd !== undefined
                       ? tempTrimEnd
-                      : effectiveDuration
+                      : effectiveDuration,
                   )}
                 </Text>
               </Flex>

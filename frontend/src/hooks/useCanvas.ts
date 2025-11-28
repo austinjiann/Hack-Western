@@ -32,114 +32,119 @@ export const useCanvas = () => {
     return { pageId, ids };
   }, []);
 
-  const createFrame = useCallback((editor: Editor, position?: { x: number; y: number }) => {
-    const shapeId = createShapeId();
-    const { ids } = getPageFrameIds(editor);
+  const createFrame = useCallback(
+    (editor: Editor, position?: { x: number; y: number }) => {
+      const shapeId = createShapeId();
+      const { ids } = getPageFrameIds(editor);
 
-    const lastFrame =
-      ids.length > 0
-        ? editor.getShape(ids[ids.length - 1])
-        : null;
+      const lastFrame =
+        ids.length > 0 ? editor.getShape(ids[ids.length - 1]) : null;
 
-    // Calculate position based on the last frame's actual width if it exists
-    const lastFrameWidth = lastFrame && "w" in lastFrame.props ? (lastFrame.props.w as number) : FRAME_WIDTH;
-    
-    const x = position?.x ?? (lastFrame ? lastFrame.x + lastFrameWidth + 50 : 100);
-    const y = position?.y ?? (lastFrame ? lastFrame.y : 400);
+      // Calculate position based on the last frame's actual width if it exists
+      const lastFrameWidth =
+        lastFrame && "w" in lastFrame.props
+          ? (lastFrame.props.w as number)
+          : FRAME_WIDTH;
 
-    const shape: TLShapePartial = {
-      id: shapeId,
-      type: "aspect-frame",
-      x,
-      y,
-      props: {
-        w: FRAME_WIDTH,
-        h: FRAME_HEIGHT,
-        name: "16:9 Frame",
-        backgroundColor: "#ffffff",
-      },
-    };
+      const x =
+        position?.x ?? (lastFrame ? lastFrame.x + lastFrameWidth + 50 : 100);
+      const y = position?.y ?? (lastFrame ? lastFrame.y : 400);
 
-    editor.createShapes([shape]);
-    ids.push(shapeId);
-
-    return shapeId;
-  }, [getPageFrameIds]);
-
-  const handleImport = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editorRef.current) return;
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const editor = editorRef.current;
-
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target?.result as string;
-
-      const img = new Image();
-      img.onload = () => {
-        const assetId = AssetRecordType.createId();
-
-        const asset: TLImageAsset = {
-          id: assetId,
-          type: "image",
-          typeName: "asset",
-          props: {
-            name: file.name,
-            src: dataUrl,
-            w: img.width,
-            h: img.height,
-            mimeType: file.type,
-            isAnimated: false,
-          },
-          meta: {},
-        };
-
-        editor.createAssets([asset]);
-
-        const { ids } = getPageFrameIds(editor);
-        const firstFrame =
-          ids.length > 0
-            ? editor.getShape(ids[0])
-            : null;
-
-        const x = firstFrame ? firstFrame.x + 50 : 150;
-        const y = firstFrame ? firstFrame.y + 50 : 150;
-
-        const shapeId = createShapeId();
-        const shape: TLShapePartial = {
-          id: shapeId,
-          type: "image",
-          x,
-          y,
-          props: {
-            assetId,
-            w: img.width,
-            h: img.height,
-          },
-        };
-
-        editor.createShapes([shape]);
+      const shape: TLShapePartial = {
+        id: shapeId,
+        type: "aspect-frame",
+        x,
+        y,
+        props: {
+          w: FRAME_WIDTH,
+          h: FRAME_HEIGHT,
+          name: "16:9 Frame",
+          backgroundColor: "#ffffff",
+        },
       };
-      img.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  }, [getPageFrameIds]);
+
+      editor.createShapes([shape]);
+      ids.push(shapeId);
+
+      return shapeId;
+    },
+    [getPageFrameIds],
+  );
+
+  const handleImport = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!editorRef.current) return;
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const editor = editorRef.current;
+
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const dataUrl = ev.target?.result as string;
+
+        const img = new Image();
+        img.onload = () => {
+          const assetId = AssetRecordType.createId();
+
+          const asset: TLImageAsset = {
+            id: assetId,
+            type: "image",
+            typeName: "asset",
+            props: {
+              name: file.name,
+              src: dataUrl,
+              w: img.width,
+              h: img.height,
+              mimeType: file.type,
+              isAnimated: false,
+            },
+            meta: {},
+          };
+
+          editor.createAssets([asset]);
+
+          const { ids } = getPageFrameIds(editor);
+          const firstFrame = ids.length > 0 ? editor.getShape(ids[0]) : null;
+
+          const x = firstFrame ? firstFrame.x + 50 : 150;
+          const y = firstFrame ? firstFrame.y + 50 : 150;
+
+          const shapeId = createShapeId();
+          const shape: TLShapePartial = {
+            id: shapeId,
+            type: "image",
+            x,
+            y,
+            props: {
+              assetId,
+              w: img.width,
+              h: img.height,
+            },
+          };
+
+          editor.createShapes([shape]);
+        };
+        img.src = dataUrl;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = "";
+    },
+    [getPageFrameIds],
+  );
 
   const focusCameraOnFrame = useCallback(
     (editor: Editor, frameId: TLShapeId, opts?: { immediate?: boolean }) => {
       const frame = editor.getShape(frameId);
       if (!frame) return;
-      
+
       const frameBounds = editor.getShapePageBounds(frameId);
       if (!frameBounds) return;
 
       // Get all seeded tutorial shapes (those with the seed meta tag)
-      const tutorialShapes = editor.getCurrentPageShapes().filter(
-        (s) => s.meta?.seedTag === "flowboard-default-seed-v1"
-      );
+      const tutorialShapes = editor
+        .getCurrentPageShapes()
+        .filter((s) => s.meta?.seedTag === "flowboard-default-seed-v1");
 
       // Calculate bounds that include both frame and tutorial content
       let combinedBounds = frameBounds.clone();
@@ -159,20 +164,23 @@ export const useCanvas = () => {
 
       editor.zoomToBounds(paddedBounds, moveOptions);
     },
-    []
+    [],
   );
 
-  const ensureTutorialLayout = useCallback((editor: Editor, focusOpts?: { immediate?: boolean }) => {
-    const { ids } = getPageFrameIds(editor);
-    let targetFrameId = ids.find((id) => editor.getShape(id)) ?? null;
-    if (!targetFrameId) {
-      targetFrameId = createFrame(editor);
-    }
-    if (targetFrameId) {
-      seedDefaultCanvas(editor, targetFrameId);
-      focusCameraOnFrame(editor, targetFrameId, focusOpts);
-    }
-  }, [createFrame, focusCameraOnFrame, getPageFrameIds]);
+  const ensureTutorialLayout = useCallback(
+    (editor: Editor, focusOpts?: { immediate?: boolean }) => {
+      const { ids } = getPageFrameIds(editor);
+      let targetFrameId = ids.find((id) => editor.getShape(id)) ?? null;
+      if (!targetFrameId) {
+        targetFrameId = createFrame(editor);
+      }
+      if (targetFrameId) {
+        seedDefaultCanvas(editor, targetFrameId);
+        focusCameraOnFrame(editor, targetFrameId, focusOpts);
+      }
+    },
+    [createFrame, focusCameraOnFrame, getPageFrameIds],
+  );
 
   const handleClear = useCallback(() => {
     if (!editorRef.current) return;
@@ -186,183 +194,221 @@ export const useCanvas = () => {
       .filter((s) => s.id !== firstFrameId)
       .map((s) => s.id);
     editor.deleteShapes(shapesToDelete);
-    
+
     if (pageId) {
       frameIdsRef.current.set(pageId, firstFrameId ? [firstFrameId] : []);
     }
 
     ensureTutorialLayout(editor);
   }, [ensureTutorialLayout, getPageFrameIds]);
-  
-  const handleMount = useCallback((editor: Editor) => {
-    editorRef.current = editor;
-    editor.updateInstanceState({ isGridMode: true });
-    
-    // Check if any frames already exist in the editor to prevent duplicates in Strict Mode
-    const existingFrames = editor.getCurrentPageShapes().filter(s => s.type === 'aspect-frame');
-    
-    if (existingFrames.length === 0) {
-      createFrame(editor);
-    } else {
-      const pageId = editor.getCurrentPageId();
-      if (pageId) {
-        frameIdsRef.current.set(pageId, existingFrames.map(s => s.id));
-      }
-        
+
+  const handleMount = useCallback(
+    (editor: Editor) => {
+      editorRef.current = editor;
+      editor.updateInstanceState({ isGridMode: true });
+
+      // Check if any frames already exist in the editor to prevent duplicates in Strict Mode
+      const existingFrames = editor
+        .getCurrentPageShapes()
+        .filter((s) => s.type === "aspect-frame");
+
+      if (existingFrames.length === 0) {
+        createFrame(editor);
+      } else {
+        const pageId = editor.getCurrentPageId();
+        if (pageId) {
+          frameIdsRef.current.set(
+            pageId,
+            existingFrames.map((s) => s.id),
+          );
+        }
+
         // Migration: Update existing frames to include new properties if missing
-        const framesToUpdate = existingFrames.filter(frame => {
-            const props = frame.props as any;
-            return !props.name || !props.backgroundColor || props.opacity === undefined;
+        const framesToUpdate = existingFrames.filter((frame) => {
+          const props = frame.props as any;
+          return (
+            !props.name || !props.backgroundColor || props.opacity === undefined
+          );
         });
-        
+
         if (framesToUpdate.length > 0) {
-            editor.updateShapes(
-                framesToUpdate.map(frame => ({
-                    id: frame.id,
-                    type: 'aspect-frame' as const,
-                    props: {
-                        ...frame.props,
-                        name: (frame.props as any).name || '16:9 Frame',
-                        backgroundColor: (frame.props as any).backgroundColor || '#ffffff',
-                        opacity: (frame.props as any).opacity ?? 1,
-                    },
-                }))
-            );
+          editor.updateShapes(
+            framesToUpdate.map((frame) => ({
+              id: frame.id,
+              type: "aspect-frame" as const,
+              props: {
+                ...frame.props,
+                name: (frame.props as any).name || "16:9 Frame",
+                backgroundColor:
+                  (frame.props as any).backgroundColor || "#ffffff",
+                opacity: (frame.props as any).opacity ?? 1,
+              },
+            })),
+          );
         }
 
         // Migration: Unlock all arrows so they can be deleted
-        const arrows = editor.getCurrentPageShapes().filter(s => s.type === 'arrow');
-        const lockedArrows = arrows.filter(a => a.isLocked);
+        const arrows = editor
+          .getCurrentPageShapes()
+          .filter((s) => s.type === "arrow");
+        const lockedArrows = arrows.filter((a) => a.isLocked);
         if (lockedArrows.length > 0) {
-             editor.updateShapes(lockedArrows.map(a => ({ id: a.id, type: 'arrow', isLocked: false })));
+          editor.updateShapes(
+            lockedArrows.map((a) => ({
+              id: a.id,
+              type: "arrow",
+              isLocked: false,
+            })),
+          );
         }
-    }
+      }
 
-    // Register side effect to prevent frame overlap and lock arrow movement
-    editor.sideEffects.registerBeforeChangeHandler('shape', (prev, next) => {
+      // Register side effect to prevent frame overlap and lock arrow movement
+      editor.sideEffects.registerBeforeChangeHandler("shape", (prev, next) => {
         // Arrow Logic: Prevent individual movement
-        if (next.type === 'arrow') {
-             const selectedIds = editor.getSelectedShapeIds();
-             if (selectedIds.includes(next.id)) {
-                 // Check if any connected shape (frame) is also selected
-                 const bindings = editor.getBindingsInvolvingShape(next.id);
-                 const connectedIds = bindings.map((b: any) => b.fromId === next.id ? b.toId : b.fromId);
-                 
-                 const isConnectedShapeSelected = connectedIds.some((id: any) => selectedIds.includes(id));
-                 
-                 if (!isConnectedShapeSelected) {
-                     // Arrow is selected but no connected shape is selected
-                     // Block the change to prevent individual movement/editing
-                     return prev;
-                 }
-             }
-             return next;
+        if (next.type === "arrow") {
+          const selectedIds = editor.getSelectedShapeIds();
+          if (selectedIds.includes(next.id)) {
+            // Check if any connected shape (frame) is also selected
+            const bindings = editor.getBindingsInvolvingShape(next.id);
+            const connectedIds = bindings.map((b: any) =>
+              b.fromId === next.id ? b.toId : b.fromId,
+            );
+
+            const isConnectedShapeSelected = connectedIds.some((id: any) =>
+              selectedIds.includes(id),
+            );
+
+            if (!isConnectedShapeSelected) {
+              // Arrow is selected but no connected shape is selected
+              // Block the change to prevent individual movement/editing
+              return prev;
+            }
+          }
+          return next;
         }
 
-        if (next.type !== 'aspect-frame') return next;
-        
+        if (next.type !== "aspect-frame") return next;
+
         // Only check if position changed
         if (prev.x === next.x && prev.y === next.y) return next;
 
-        const nextProps = next.props as { w: number, h: number };
+        const nextProps = next.props as { w: number; h: number };
         const nextBounds = new Box(next.x, next.y, nextProps.w, nextProps.h);
-        
-        const others = editor.getCurrentPageShapes().filter(s => s.type === 'aspect-frame' && s.id !== next.id);
-        
+
+        const others = editor
+          .getCurrentPageShapes()
+          .filter((s) => s.type === "aspect-frame" && s.id !== next.id);
+
         for (const other of others) {
-            const otherProps = other.props as { w: number, h: number };
-            const otherW = otherProps.w || FRAME_WIDTH;
-            const otherH = otherProps.h || FRAME_HEIGHT;
-            const otherBounds = new Box(other.x, other.y, otherW, otherH);
-            
-            if (nextBounds.collides(otherBounds)) {
-                // Collision detected, block the move
-                return prev;
-            }
+          const otherProps = other.props as { w: number; h: number };
+          const otherW = otherProps.w || FRAME_WIDTH;
+          const otherH = otherProps.h || FRAME_HEIGHT;
+          const otherBounds = new Box(other.x, other.y, otherW, otherH);
+
+          if (nextBounds.collides(otherBounds)) {
+            // Collision detected, block the move
+            return prev;
+          }
         }
-        
+
         return next;
-    });
+      });
 
-    // Register side effect to delete arrows when connected frame is deleted
-    editor.sideEffects.registerBeforeDeleteHandler('shape', (shape) => {
-        if (shape.type === 'aspect-frame') {
-             // Find all arrows on the page
-             const arrows = editor.getCurrentPageShapes().filter(s => s.type === 'arrow');
-             
-             const arrowsToDelete: TLShapeId[] = [];
-             
-             for (const arrow of arrows) {
-                 // We can use getBindingsFromShape if available, or check bindings manually
-                 // Since we saw getBindingsFromShape in the source, let's try to use it safely
-                 // If it's not available on editor instance directly (it might be an internal util), 
-                 // we can fallback to store query but iterating arrows is safer context-wise.
-                 
-                 // Let's try to access bindings from the arrow shape itself if possible? 
-                 // No, bindings are separate records.
-                 
-                 // Let's use the store query but specifically for bindings from this arrow
-                 const bindings = editor.store.allRecords().filter(r => 
-                    r.typeName === 'binding' && 
-                    r.type === 'arrow' && 
-                    (r as any).fromId === arrow.id
-                 );
-                 
-                 const isConnected = bindings.some(b => (b as any).toId === shape.id);
-                 if (isConnected) {
-                     arrowsToDelete.push(arrow.id);
-                 }
-             }
-            
-            if (arrowsToDelete.length > 0) {
-                editor.deleteShapes(arrowsToDelete);
+      // Register side effect to delete arrows when connected frame is deleted
+      editor.sideEffects.registerBeforeDeleteHandler("shape", (shape) => {
+        if (shape.type === "aspect-frame") {
+          // Find all arrows on the page
+          const arrows = editor
+            .getCurrentPageShapes()
+            .filter((s) => s.type === "arrow");
+
+          const arrowsToDelete: TLShapeId[] = [];
+
+          for (const arrow of arrows) {
+            // We can use getBindingsFromShape if available, or check bindings manually
+            // Since we saw getBindingsFromShape in the source, let's try to use it safely
+            // If it's not available on editor instance directly (it might be an internal util),
+            // we can fallback to store query but iterating arrows is safer context-wise.
+
+            // Let's try to access bindings from the arrow shape itself if possible?
+            // No, bindings are separate records.
+
+            // Let's use the store query but specifically for bindings from this arrow
+            const bindings = editor.store
+              .allRecords()
+              .filter(
+                (r) =>
+                  r.typeName === "binding" &&
+                  r.type === "arrow" &&
+                  (r as any).fromId === arrow.id,
+              );
+
+            const isConnected = bindings.some(
+              (b) => (b as any).toId === shape.id,
+            );
+            if (isConnected) {
+              arrowsToDelete.push(arrow.id);
             }
+          }
+
+          if (arrowsToDelete.length > 0) {
+            editor.deleteShapes(arrowsToDelete);
+          }
         }
-    });
+      });
 
-    // Register after delete handler to restore bindings if shapes still exist
-    // This prevents unbinding arrows by dragging them
-    editor.sideEffects.registerAfterDeleteHandler('binding', (binding) => {
-        if (binding.type === 'arrow') {
-            const arrowId = (binding as any).fromId;
-            const targetId = (binding as any).toId;
-            
-            const arrow = editor.getShape(arrowId);
-            const target = editor.getShape(targetId);
-            
-            // If both shapes still exist, this was likely an accidental unbind (e.g. dragging handle)
-            if (arrow && target) {
-                // Restore the binding
-                editor.createBinding(binding as any);
-            }
+      // Register after delete handler to restore bindings if shapes still exist
+      // This prevents unbinding arrows by dragging them
+      editor.sideEffects.registerAfterDeleteHandler("binding", (binding) => {
+        if (binding.type === "arrow") {
+          const arrowId = (binding as any).fromId;
+          const targetId = (binding as any).toId;
+
+          const arrow = editor.getShape(arrowId);
+          const target = editor.getShape(targetId);
+
+          // If both shapes still exist, this was likely an accidental unbind (e.g. dragging handle)
+          if (arrow && target) {
+            // Restore the binding
+            editor.createBinding(binding as any);
+          }
         }
-    });
+      });
 
-    // Register listener to select frame when clicking on its children
-    editor.sideEffects.registerAfterChangeHandler('instance_page_state', (prev, next) => {
-      if (prev.pageId !== next.pageId) {
-        setTimeout(() => ensureTutorialLayout(editor, { immediate: true }), 0);
-      }
-      return next;
-    });
+      // Register listener to select frame when clicking on its children
+      editor.sideEffects.registerAfterChangeHandler(
+        "instance_page_state",
+        (prev, next) => {
+          if (prev.pageId !== next.pageId) {
+            setTimeout(
+              () => ensureTutorialLayout(editor, { immediate: true }),
+              0,
+            );
+          }
+          return next;
+        },
+      );
 
-    // We can't easily return the cleanup function from handleMount, 
-    // but since handleMount is called once (or twice in strict mode), 
-    // we should be careful. 
-    // Ideally this should be in a useEffect, but we need the editor instance.
-    // Since we store editor in ref, we can use a useEffect that depends on nothing 
-    // but checks the ref? No, handleMount provides the editor.
-    
-    // Actually, let's move this to a useEffect that runs when editorRef.current is set?
-    // But editorRef is a ref, changes don't trigger re-renders.
-    // We can just leave it here, but we risk registering multiple times if handleMount is called multiple times.
-    // However, handleMount is usually called once per editor instance lifecycle.
-    
-    // To be safe, we can store the cleanup function in a ref and call it if it exists.
-    // But for now, let's just register it.
-    
-    ensureTutorialLayout(editor, { immediate: true });
-  }, [createFrame, ensureTutorialLayout]);
+      // We can't easily return the cleanup function from handleMount,
+      // but since handleMount is called once (or twice in strict mode),
+      // we should be careful.
+      // Ideally this should be in a useEffect, but we need the editor instance.
+      // Since we store editor in ref, we can use a useEffect that depends on nothing
+      // but checks the ref? No, handleMount provides the editor.
+
+      // Actually, let's move this to a useEffect that runs when editorRef.current is set?
+      // But editorRef is a ref, changes don't trigger re-renders.
+      // We can just leave it here, but we risk registering multiple times if handleMount is called multiple times.
+      // However, handleMount is usually called once per editor instance lifecycle.
+
+      // To be safe, we can store the cleanup function in a ref and call it if it exists.
+      // But for now, let's just register it.
+
+      ensureTutorialLayout(editor, { immediate: true });
+    },
+    [createFrame, ensureTutorialLayout],
+  );
 
   return {
     handleMount,

@@ -8,7 +8,7 @@ import { VideoClip } from "../types/types";
  */
 export async function mergeVideosClient(
   clips: VideoClip[],
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<Blob> {
   if (clips.length === 0) {
     throw new Error("No clips provided");
@@ -176,7 +176,7 @@ export async function convertToMP4(blob: Blob): Promise<Blob> {
  */
 export function downloadVideo(
   blob: Blob,
-  filename: string = "merged-video.webm"
+  filename: string = "merged-video.webm",
 ) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

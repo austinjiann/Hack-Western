@@ -83,7 +83,7 @@ const DemoSection: React.FC = () => {
             onClick={(e) => {
               e.stopPropagation();
               const vid = document.getElementById(
-                "demo-video"
+                "demo-video",
               ) as HTMLVideoElement;
               if (vid) vid.muted = !vid.muted;
             }}

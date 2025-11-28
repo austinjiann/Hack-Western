@@ -8,14 +8,13 @@ import { ArrowActionMenu } from "../components/canvas/ArrowActionMenu";
 
 const customShapeUtils = [FrameShapeUtil];
 
-
 export default function Canvas() {
   const { handleMount, handleClear, editorRef } = useCanvas();
 
   return (
     <div style={{ position: "fixed", inset: 0 }}>
-      <Tldraw 
-        onMount={handleMount} 
+      <Tldraw
+        onMount={handleMount}
         shapeUtils={customShapeUtils}
         persistenceKey="hack-western-canvas-v3"
         components={{
@@ -30,12 +29,8 @@ export default function Canvas() {
             </>
           ),
         }}
-      >
-      </Tldraw>
-      <CanvasToolbar
-        onClear={handleClear}
-        editorRef={editorRef}
-      />
+      ></Tldraw>
+      <CanvasToolbar onClear={handleClear} editorRef={editorRef} />
     </div>
   );
 }

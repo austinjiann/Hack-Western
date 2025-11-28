@@ -31,7 +31,7 @@ const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
         h: pageBounds.h * zoom,
       };
     },
-    [editor, shapeId]
+    [editor, shapeId],
   );
 
   if (!bounds) return null;
@@ -49,7 +49,7 @@ const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
         pointerEvents: "none",
       }}
     />,
-    document.body
+    document.body,
   );
 };
 
@@ -185,7 +185,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
 
   override canReceiveNewChildrenOfType(
     _shape: IFrameShape,
-    type: TLShape["type"]
+    type: TLShape["type"],
   ) {
     return type !== "aspect-frame" && type !== "arrow";
   }
