@@ -27,7 +27,8 @@ class JobService:
     async def create_video_job(self, request: VideoJobRequest) -> str:
         operation = await self.vertex_service.generate_video_content(
             create_video_prompt(request.custom_prompt, request.global_context),
-            request.starting_image
+            request.starting_image,
+            request.duration_seconds
             )
         
         job_id = str(uuid.uuid4())
