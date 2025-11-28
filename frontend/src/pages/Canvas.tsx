@@ -5,6 +5,7 @@ import { CanvasToolbar } from "../components/canvas/CanvasToolbar";
 import { FrameShapeUtil } from "../components/canvas/VideoCanvasComponent";
 import { VideoGenerationManager } from "../components/canvas/VideoGenerationManager";
 import { ArrowActionMenu } from "../components/canvas/ArrowActionMenu";
+import { CanvasNavigationMenu } from "../components/canvas/CanvasNavigationMenu";
 
 const customShapeUtils = [FrameShapeUtil];
 
@@ -31,6 +32,7 @@ export default function Canvas() {
         }}
       ></Tldraw>
       <CanvasToolbar onClear={handleClear} editorRef={editorRef} />
+      <CanvasNavigationMenu />
     </div>
   );
 }
