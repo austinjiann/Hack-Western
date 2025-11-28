@@ -7,6 +7,7 @@ from utils.env import settings
 import uuid
 import redis
 import pickle
+import blosc
 
 class JobService:
     def __init__(self, vertex_service: VertexService):
@@ -15,13 +16,13 @@ class JobService:
 
     def _serialize_job(self, job: VideoJob) -> bytes:
         """Serialize VideoJob to bytes using pickle for Redis storage"""
-        return pickle.dumps(job)
+        return blosc.compress(pickle.dumps(job))
     
     def _deserialize_job(self, data: bytes) -> Optional[VideoJob]:
         """Deserialize bytes to VideoJob from Redis storage"""
         if not data:
             return None
-        return pickle.loads(data)
+        return pickle.loads(blosc.decompress(data))
 
     async def create_video_job(self, request: VideoJobRequest) -> str:
         operation = await self.vertex_service.generate_video_content(
@@ -29,7 +30,7 @@ class JobService:
             request.starting_image
             )
         
-        job_id = str(uuid.uuid4())  # TODO: change to actual job ID from operation
+        job_id = str(uuid.uuid4())
         
         # Initialize job status
         job = VideoJob(
@@ -39,8 +40,8 @@ class JobService:
             job_start_time=datetime.now()
         )
         
-        # Store in Redis with 20 minute TTL
-        self.redis_client.setex(f"job:{job_id}", 1200, self._serialize_job(job))
+        # Store in Redis with 5 minute TTL
+        self.redis_client.setex(f"job:{job_id}", 300, self._serialize_job(job))
         
         return job_id
 
