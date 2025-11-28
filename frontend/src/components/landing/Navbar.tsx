@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Menu, X, LogIn, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogIn, LogOut, LayoutDashboard, User as UserIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import * as Dialog from "@radix-ui/react-dialog";
 import { NavItem } from "../../types/types";
+import { useAuth } from "../../contexts/AuthContext";
 import logoImage from "../../assets/logo.png";
 
 const navItems: NavItem[] = [];
@@ -10,6 +11,21 @@ const navItems: NavItem[] = [];
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  
+  // Get user's display name
+  const getUserName = () => {
+    if (!user) return '';
+    return user.user_metadata?.full_name || 
+           user.user_metadata?.name || 
+           user.email?.split('@')[0] || 
+           'User';
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,27 +91,51 @@ const Navbar: React.FC = () => {
               <LayoutDashboard className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
               <span className="relative z-10">Dashboard</span>
             </button>
-            <button
-              onClick={() => navigate("/login")}
-              className={`
-              flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
-              ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
-            `}
-            >
-              <LogIn className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
-              <span className="relative z-10">Login</span>
-              <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
-            <button
-              onClick={() => navigate("/app")}
-              className={`
-              relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
-              ${isScrolled ? "px-4 py-1.5 text-xs" : "px-6 py-2 text-sm"}
-            `}
-            >
-              <span className="relative z-10">Get Started</span>
-              <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
+            {user ? (
+              <>
+                {/* Profile Button */}
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 border border-gray-200/50 px-3 py-1.5">
+                  <UserIcon className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
+                  <span className={`${isScrolled ? "text-xs" : "text-sm"}`}>{getUserName()}</span>
+                </div>
+                {/* Logout Button */}
+                <button
+                  onClick={handleLogout}
+                  className={`
+                  flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
+                  ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
+                `}
+                >
+                  <LogOut className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
+                  <span className="relative z-10">Logout</span>
+                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => navigate("/login")}
+                  className={`
+                  flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
+                  ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
+                `}
+                >
+                  <LogIn className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
+                  <span className="relative z-10">Login</span>
+                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+                <button
+                  onClick={() => navigate("/app")}
+                  className={`
+                  relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
+                  ${isScrolled ? "px-4 py-1.5 text-xs" : "px-6 py-2 text-sm"}
+                `}
+                >
+                  <span className="relative z-10">Get Started</span>
+                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu using Radix Dialog */}
@@ -141,25 +181,45 @@ const Navbar: React.FC = () => {
                         Dashboard
                       </button>
                     </Dialog.Close>
-                    <Dialog.Close asChild>
-                      <button
-                        onClick={() => {
-                          navigate("/login");
-                        }}
-                        className="w-full py-3 bg-black text-white font-bold rounded-xl shadow-lg hover:bg-gray-900 transition-colors cursor-pointer flex items-center justify-center gap-2"
-                      >
-                        <LogIn className="w-5 h-5" />
-                        Login
-                      </button>
-                    </Dialog.Close>
-                    <button
-                      onClick={() => {
-                        navigate("/app");
-                      }}
-                      className="w-full py-3 bg-black text-white font-bold rounded-xl mt-4 shadow-lg hover:bg-gray-900 transition-colors cursor-pointer"
-                    >
-                      Get Started
-                    </button>
+                    {user ? (
+                      <>
+                        <div className="w-full py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl shadow-lg flex items-center justify-center gap-2">
+                          <UserIcon className="w-5 h-5" />
+                          {getUserName()}
+                        </div>
+                        <Dialog.Close asChild>
+                          <button
+                            onClick={handleLogout}
+                            className="w-full py-3 bg-black text-white font-bold rounded-xl shadow-lg hover:bg-gray-900 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <LogOut className="w-5 h-5" />
+                            Logout
+                          </button>
+                        </Dialog.Close>
+                      </>
+                    ) : (
+                      <>
+                        <Dialog.Close asChild>
+                          <button
+                            onClick={() => {
+                              navigate("/login");
+                            }}
+                            className="w-full py-3 bg-black text-white font-bold rounded-xl shadow-lg hover:bg-gray-900 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <LogIn className="w-5 h-5" />
+                            Login
+                          </button>
+                        </Dialog.Close>
+                        <button
+                          onClick={() => {
+                            navigate("/app");
+                          }}
+                          className="w-full py-3 bg-black text-white font-bold rounded-xl mt-4 shadow-lg hover:bg-gray-900 transition-colors cursor-pointer"
+                        >
+                          Get Started
+                        </button>
+                      </>
+                    )}
                   </div>
                 </Dialog.Content>
               </Dialog.Portal>
