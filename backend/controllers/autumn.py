@@ -17,22 +17,46 @@ class Autumn(APIController):
             customer_id = "demo-user"  # Remove this in production
         return customer_id
 
-    @get("/api/autumn/*")
+
+    @post("/checkout")
+    async def autumn_checkout(self, request: Request):
+        try:
+            body = await request.json()
+            print(f"Checkout request body: {body}")  # Debug log
+            
+            product_id = body.get("product_id", "")
+            customer_id = "demo-user"
+            
+            result = await autumn_service.proxy_request(
+                path="checkout",
+                method="POST",
+                customer_id=customer_id,
+                customer_data={"name": "", "email": ""},
+                body={"product_id": product_id}
+            )
+            print(f"Autumn response: {result}")  # Debug log
+            return json(result["data"], status=result["status"])
+        except Exception as e:
+            import traceback
+            traceback.print_exc()  # Print full error to terminal
+            return json({"error": str(e)}, status=500)
+            
+    @get("*")
     async def handle_get(self, request: Request):
         """Handle GET requests to /api/autumn/*"""
         return await self._handle_request(request, method="GET")
 
-    @post("/api/autumn/*")
+    @post("*")
     async def handle_post(self, request: Request):
         """Handle POST requests to /api/autumn/*"""
         return await self._handle_request(request, method="POST")
 
-    @put("/api/autumn/*")
+    @put("*")
     async def handle_put(self, request: Request):
         """Handle PUT requests to /api/autumn/*"""
         return await self._handle_request(request, method="PUT")
 
-    @delete("/api/autumn/*")
+    @delete("*")
     async def handle_delete(self, request: Request):
         """Handle DELETE requests to /api/autumn/*"""
         return await self._handle_request(request, method="DELETE")

@@ -26,30 +26,6 @@ app.use_cors(
     allow_headers="*",
 )
 
-# Autumn checkout route
-@app.router.post("/api/autumn/checkout")
-async def autumn_checkout(request: Request):
-    try:
-        body = await request.json()
-        print(f"Checkout request body: {body}")  # Debug log
-        
-        product_id = body.get("product_id", "")
-        customer_id = "demo-user"
-        
-        result = await autumn_service.proxy_request(
-            path="checkout",
-            method="POST",
-            customer_id=customer_id,
-            customer_data={"name": "", "email": ""},
-            body={"product_id": product_id}
-        )
-        print(f"Autumn response: {result}")  # Debug log
-        return json(result["data"], status=result["status"])
-    except Exception as e:
-        import traceback
-        traceback.print_exc()  # Print full error to terminal
-        return json({"error": str(e)}, status=500)
-
 # random test routes
 @app.router.get("/")
 def hello_world():
