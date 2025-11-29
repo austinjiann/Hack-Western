@@ -20,9 +20,10 @@ class VideoJobRequest:
 @dataclass
 class JobStatus:
     job_start_time: datetime
-    status: Optional[Literal["done", "waiting"]]
+    status: Optional[Literal["done", "waiting", "error"]]
     job_end_time: Optional[datetime] = None
     video_url: Optional[str] = None
+    error: Optional[str] = None
 
 @dataclass
 class VideoJob:

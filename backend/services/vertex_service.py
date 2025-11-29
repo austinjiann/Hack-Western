@@ -13,20 +13,10 @@ class VertexService:
         self.bucket_name = settings.GOOGLE_CLOUD_BUCKET_NAME
 
     async def generate_video_content(self, prompt: str, image_data: bytes = None, ending_image_data: bytes = None, duration_seconds: int = 6) -> GenerateVideosOperation:
-
-        starting_frame = await self.generate_image_content(
-            prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version with no text. Keep the art/image style exactly the same. IMPORTANT: Fill the ENTIRE 16:9 frame with content - do not add black bars, letterboxing, or padding. Expand, extend, or zoom the content to completely fill the frame edge-to-edge.",
-            image=image_data
-        )
-
         ending_frame = None
         if ending_image_data:
-            ending_frame = await self.generate_image_content(
-                prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version with no text. Keep the art/image style exactly the same. IMPORTANT: Fill the ENTIRE 16:9 frame with content - do not add black bars, letterboxing, or padding. Expand, extend, or zoom the content to completely fill the frame edge-to-edge.",
-                image=ending_image_data
-            )
             ending_frame = Image(
-                image_bytes=ending_frame,
+                image_bytes=ending_image_data,
                 mime_type="image/png",
             )
 
@@ -35,7 +25,7 @@ class VertexService:
             model="veo-3.1-fast-generate-001",
             prompt=prompt,
             image=Image(
-                image_bytes=starting_frame,
+                image_bytes=image_data,
                 mime_type="image/png",
             ),
             config=GenerateVideosConfig(

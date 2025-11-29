@@ -1,7 +1,7 @@
 from blacksheep import json, Response, Request, FromForm
 from blacksheep.server.controllers import APIController, post, get
 from services.supabase_service import SupabaseService
-from models.job import VideoJobRequest, VideoGenerationInput
+from models.job import JobStatus, VideoJobRequest, VideoGenerationInput
 from services.job_service import JobService
 
 class Jobs(APIController):
@@ -51,16 +51,22 @@ class Jobs(APIController):
         """
         Get status of job
         """
-        status = await self.job_service.get_video_job_status(job_id)
+        jobStatus: JobStatus = await self.job_service.get_video_job_status(job_id)
         
-        if not status:
+        if not jobStatus:
             return json({"error": "Job not found"}, status=404)
 
+        if jobStatus.status == "error":
+            return json({
+                "status": "error",
+                "error_message": jobStatus.error
+            }, status=500)
+
         return json({
-            "status": status.status,
-            "job_start_time": status.job_start_time.isoformat(),
-            "job_end_time": status.job_end_time.isoformat() if status.job_end_time else None,
-            "video_url": status.video_url
+            "status": jobStatus.status,
+            "job_start_time": jobStatus.job_start_time.isoformat(),
+            "job_end_time": jobStatus.job_end_time.isoformat() if jobStatus.job_end_time else None,
+            "video_url": jobStatus.video_url
         })
 
     # DEV MOCK ENDPOINTS

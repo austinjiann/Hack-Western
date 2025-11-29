@@ -8,6 +8,8 @@ import uuid
 import redis
 import pickle
 import blosc
+import asyncio
+import traceback
 
 class JobService:
     def __init__(self, vertex_service: VertexService):
@@ -15,51 +17,117 @@ class JobService:
         self.redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=False)
 
     def _serialize_job(self, job: VideoJob) -> str | bytes:
-        """Serialize VideoJob to bytes using pickle for Redis storage"""
+        """Serialize + compress VideoJob to bytes using pickle for Redis storage"""
         return blosc.compress(pickle.dumps(job))
     
     def _deserialize_job(self, data: bytes) -> Optional[VideoJob]:
-        """Deserialize bytes to VideoJob from Redis storage"""
-        if not data:
-            return None
+        """Deserialize + compress bytes to VideoJob from Redis storage"""
         return pickle.loads(blosc.decompress(data))
 
     async def create_video_job(self, request: VideoJobRequest) -> str:
-
-        annotation_description = await self.vertex_service.analyze_image_content(
-            prompt="Describe any animation annotations you see. Use this description to inform video generation. Be descriptive about where the annotations are.",
-            image_data=request.starting_image
-        )
-
-        operation = await self.vertex_service.generate_video_content(
-            create_video_prompt(request.custom_prompt, request.global_context, annotation_description),
-            request.starting_image,
-            request.ending_image,
-            request.duration_seconds
-            )
-        
+        """Create a video job and return job_id immediately, processing happens in background"""
         job_id = str(uuid.uuid4())
         
-        # Initialize job status
-        job = VideoJob(
-            job_id=job_id,
-            operation=operation,
-            request=request,
-            job_start_time=datetime.now()
-        )
+        pending_job = {
+            "status": "pending",
+            "job_start_time": datetime.now().isoformat()
+        }
+        self.redis_client.setex(f"job:{job_id}:pending", 100, pickle.dumps(pending_job))
         
-        # Store in Redis with 5 minute TTL
-        self.redis_client.setex(f"job:{job_id}", 300, self._serialize_job(job))
+        # start background task
+        asyncio.create_task(self._process_video_job(job_id, request))
         
         return job_id
+    
+    async def _process_video_job(self, job_id: str, request: VideoJobRequest):
+        """Background task that processes the video generation"""
+        try:
+            # for parallel tasks
+            tasks = [
+                self.vertex_service.analyze_image_content(
+                    prompt="Describe any animation annotations you see. Use this description to inform video generation. Be descriptive about where the annotations are.",
+                    image_data=request.starting_image
+                ),
+                self.vertex_service.generate_image_content(
+                    prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version of the image with no text. Keep the art/image style the exact same.",
+                    image=request.starting_image
+                )
+            ]
+            
+            if request.ending_image:
+                tasks.append(
+                    self.vertex_service.generate_image_content(
+                        prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version of the image with no text. Keep the art/image style the exact same.",
+                        image=request.ending_image
+                    )
+                )
+            
+            results = await asyncio.gather(*tasks)
+            annotation_description = results[0]
+            starting_frame = results[1]
+            ending_frame = results[2] if len(results) > 2 else None
+
+            operation = await self.vertex_service.generate_video_content(
+                create_video_prompt(request.custom_prompt, request.global_context, annotation_description),
+                starting_frame,
+                ending_frame,
+                request.duration_seconds
+            )
+            
+            job = VideoJob(
+                job_id=job_id,
+                operation=operation,
+                request=request,
+                job_start_time=datetime.now()
+            )
+            
+            self.redis_client.delete(f"job:{job_id}:pending")
+            self.redis_client.setex(f"job:{job_id}", 300, self._serialize_job(job))
+            
+        except Exception as e:
+            # debug stuff
+            print(f"Error processing video job {job_id}: {e}")
+            traceback.print_exc()
+            error_job = {
+                "status": "error",
+                "error": str(e),
+                "job_start_time": datetime.now().isoformat()
+            }
+            self.redis_client.delete(f"job:{job_id}:pending")
+            self.redis_client.setex(f"job:{job_id}:error", 300, pickle.dumps(error_job))
 
     async def get_video_job_status(self, job_id: str) -> JobStatus:
-        # Retrieve job from Redis
+        # Check if job is still pending
+        pending_data = self.redis_client.get(f"job:{job_id}:pending")
+        if pending_data:
+            pending_job = pickle.loads(pending_data)
+            return JobStatus(
+                status="waiting",
+                job_start_time=datetime.fromisoformat(pending_job["job_start_time"]),
+                job_end_time=None,
+                video_url=None,
+            )
+        
+        # Check if job failed
+        error_data = self.redis_client.get(f"job:{job_id}:error")
+        if error_data:
+            error_job = pickle.loads(error_data)
+            return JobStatus(
+                status="error",
+                job_start_time=datetime.fromisoformat(error_job["job_start_time"]),
+                job_end_time=None,
+                video_url=None,
+                error=error_job.get("error")
+            )
+        
+        # Retrieve actual job from Redis
         job_data = self.redis_client.get(f"job:{job_id}")
+
+        if job_data is None: # if job not found
+            return None
+
         job = self._deserialize_job(job_data)
         
-        if job is None:
-            return None
 
         result = await self.vertex_service.get_video_status(job.operation)
 
@@ -71,8 +139,7 @@ class JobService:
         )
 
         if result.status == "done":
-            # Clean up completed job from Redis
-            self.redis_client.delete(f"job:{job_id}")
+            self.redis_client.delete(f"job:{job_id}") # clean from redis
 
         return ret
 
