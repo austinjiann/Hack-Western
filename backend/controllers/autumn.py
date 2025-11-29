@@ -27,7 +27,7 @@ class Autumn(APIController):
             product_id = body.get("product_id", "")
             customer_id = "demo-user"
             
-            result = await autumn_service.proxy_request(
+            result = await self.autumn_service.proxy_request(
                 path="checkout",
                 method="POST",
                 customer_id=customer_id,
