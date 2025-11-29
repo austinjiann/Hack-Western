@@ -23,11 +23,11 @@ function Dashboard() {
 
   return (
     <Theme>
-      <div className="min-h-screen relative bg-white border-r flex flex-col">
+      <div className="min-h-screen relative bg-white flex flex-col">
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]"></div>
 
-        <div className="relative z-10 border-r flex-1 flex flex-col">
+        <div className="relative z-10 flex-1 flex flex-col">
           <Navbar />
 
           <main className="pt-32 pb-20 px-6 flex-1">
@@ -44,7 +44,7 @@ function Dashboard() {
                 </div>
                 <button
                   onClick={() => navigate("/app")}
-                  className="px-6 py-3 bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-black transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-white/10 cursor-pointer self-start md:self-auto"
+                  className="px-6 py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer self-start md:self-auto"
                 >
                   Create New Project
                   <ArrowRight className="w-4 h-4" />
@@ -88,7 +88,7 @@ function Dashboard() {
                     </div>
                   </div>
 
-                  <button className="w-full py-3 bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl hover:bg-black transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-white/10 cursor-pointer">
+                  <button className="w-full py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer">
                     Upgrade Plan
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -128,7 +128,7 @@ function Dashboard() {
                     </div>
                   </div>
 
-                  <button className="w-full py-3 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/5 cursor-pointer">
+                  <button className="w-full py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer">
                     Manage Billing
                     <ArrowRight className="w-4 h-4" />
                   </button>

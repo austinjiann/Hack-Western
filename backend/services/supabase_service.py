@@ -4,7 +4,6 @@ from typing import Optional
 from blacksheep import Request
 
 
-
 class SupabaseService:
     def __init__(self):
         self.supabase: Client = create_client(
@@ -64,4 +63,18 @@ class SupabaseService:
         except Exception as e:
             print(f"Failed to do transaction: {e}")
             pass
+        
+    def get_user_row(self, user_id: str, table: str):
+        """ fetches user row """
+        try:
+            return (
+                self.supabase
+                .table(table)    
+                .select("*")       
+                .eq("id", user_id) 
+                .single()          
+                .execute()
+            )
+        except Exception:
+            return None
 

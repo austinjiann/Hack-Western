@@ -3,6 +3,9 @@ import { Theme } from "@radix-ui/themes";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import PricingRoute from "./components/PricingRoute";
 import Landing from "./pages/Landing";
 import Canvas from "./pages/Canvas";
 import Dashboard from "./pages/Dashboard";
@@ -19,10 +22,38 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/app" element={<Canvas />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/login" element={<Login />} />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/pricing"
+                element={
+                  <PricingRoute>
+                    <Pricing />
+                  </PricingRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/app"
+                element={
+                  <ProtectedRoute>
+                    <Canvas />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
           </BrowserRouter>
