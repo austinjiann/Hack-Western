@@ -29,6 +29,7 @@ export default function Canvas() {
               <VideoGenerationManager />
             </>
           ),
+          StylePanel: null,
         }}
       ></Tldraw>
       <CanvasToolbar onClear={handleClear} editorRef={editorRef} />
