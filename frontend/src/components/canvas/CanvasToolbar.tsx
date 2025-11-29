@@ -1,10 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button, Flex, Tooltip } from "@radix-ui/themes";
 import { Eraser, Video } from "lucide-react";
 import { Editor } from "tldraw";
 import { toast } from "sonner";
-import { mergeVideosClient, downloadVideo } from "../../utils/videoMergeUtils";
-import { VideoClip } from "../../types/types";
+import { useFrameGraphContext } from "../../contexts/FrameGraphContext";
 
 interface CanvasToolbarProps {
   onClear: () => void;
@@ -15,10 +14,9 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onClear,
   editorRef,
 }) => {
-  const [isMerging, setIsMerging] = useState(false);
-  const [mergeProgress, setMergeProgress] = useState(0);
+  const frameGraph = useFrameGraphContext();
 
-  const handleMergeVideos = async () => {
+  const handleMergeVideos = () => {
     if (!editorRef.current) {
       toast.error("Editor not ready. Please wait a moment and try again.");
       return;
@@ -26,61 +24,54 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
     const editor = editorRef.current;
 
-    // Collect all arrows with videos
-    const arrows = editor
-      .getCurrentPageShapes()
-      .filter(
-        (s) =>
-          s.type === "arrow" && s.meta?.videoUrl && s.meta?.status === "done",
-      );
+    // Get selected shapes
+    const selectedIds = editor.getSelectedShapeIds();
+    
+    // Find the selected frame
+    const selectedFrame = selectedIds
+      .map((id) => editor.getShape(id))
+      .find((shape) => shape?.type === "aspect-frame");
 
-    if (arrows.length === 0) {
-      toast.error("No videos found. Please generate or add videos first.");
+    if (!selectedFrame) {
+      toast.error("Please select a frame to merge videos from.");
       return;
     }
 
-    // Sort arrows by their position (left to right, top to bottom)
-    const sortedArrows = [...arrows].sort((a, b) => {
-      const aBounds = editor.getShapePageBounds(a.id);
-      const bBounds = editor.getShapePageBounds(b.id);
-      if (!aBounds || !bBounds) return 0;
-      if (Math.abs(aBounds.y - bBounds.y) > 50) {
-        // Different rows - sort by Y
-        return aBounds.y - bBounds.y;
-      }
-      // Same row - sort by X
-      return aBounds.x - bBounds.x;
-    });
+    // Get the path from root to the selected frame (reverse traversal)
+    const path = frameGraph.getFramePath(selectedFrame.id);
 
-    // Convert arrows to video clips
-    const clips: VideoClip[] = sortedArrows.map((arrow) => ({
-      videoUrl: arrow.meta?.videoUrl as string,
-      trimEnd: arrow.meta?.trimEnd as number | undefined,
-      duration: arrow.meta?.duration as number | undefined,
-    }));
-
-    setIsMerging(true);
-    setMergeProgress(0);
-
-    try {
-      const mergedBlob = await mergeVideosClient(clips, (progress) => {
-        setMergeProgress(progress);
-      });
-
-      // Download the merged video
-      downloadVideo(mergedBlob, `merged-video-${Date.now()}.webm`);
-      toast.success(
-        `Successfully merged ${clips.length} video${clips.length === 1 ? "" : "s"}!`,
-      );
-    } catch (error) {
-      console.error("Merge failed:", error);
-      toast.error(
-        `Failed to merge videos: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
-    } finally {
-      setIsMerging(false);
-      setMergeProgress(0);
+    if (path.length === 0) {
+      toast.error("No path found for the selected frame.");
+      return;
     }
+
+    // Collect video URLs from arrows in the path
+    const videoUrls: string[] = [];
+
+    // Traverse the path (skip the root frame, start from the first child)
+    for (let i = 1; i < path.length; i++) {
+      const node = path[i];
+      
+      // Get the arrow for this node
+      if (node.arrowId) {
+        const arrow = editor.getShape(node.arrowId);
+        if (arrow && arrow.type === "arrow") {
+          const videoUrl = arrow.meta?.videoUrl as string | undefined;
+          if (videoUrl && arrow.meta?.status === "done") {
+            videoUrls.push(videoUrl);
+          }
+        }
+      }
+    }
+
+    if (videoUrls.length === 0) {
+      toast.error("No videos found in the path from root to selected frame.");
+      return;
+    }
+
+    // Log the array of video URLs
+    console.log("Video URLs for merging:", videoUrls);
+    toast.success(`Found ${videoUrls.length} video${videoUrls.length === 1 ? "" : "s"} to merge.`);
   };
 
   return (
@@ -103,19 +94,16 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content="Merge All Videos">
+        <Tooltip content="Merge Videos from Selected Frame">
           <Button
             variant="surface"
             color="green"
             onClick={handleMergeVideos}
-            disabled={isMerging}
-            style={{ cursor: isMerging ? "not-allowed" : "pointer" }}
+            style={{ cursor: "pointer" }}
             className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-all"
           >
             <Video size={16} />
-            {isMerging
-              ? `Merging... ${Math.round(mergeProgress * 100)}%`
-              : "Merge Videos"}
+            Merge Videos
           </Button>
         </Tooltip>
       </Flex>

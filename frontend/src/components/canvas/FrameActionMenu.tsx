@@ -18,14 +18,16 @@ import {
   Lock,
   Unlock,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { useGlobalContext } from "../../hooks/useGlobalContext";
 import { apiFetch } from "../../utils/api";
+import { useFrameGraphContext } from "../../contexts/FrameGraphContext";
 
 export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
   const editor = useEditor();
   const { context } = useGlobalContext("global-context");
+  const frameGraph = useFrameGraphContext(); // May be null during SVG export
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameValue, setNameValue] = useState("");
   const [promptText, setPromptText] = useState("");
@@ -42,6 +44,25 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     editor,
     shapeId,
   ]);
+
+  // Log path when frame is selected
+  useEffect(() => {
+    if (isSelected && frame && frameGraph) {
+      const path = frameGraph.getFramePath(shapeId);
+      console.log("=== Frame Selected ===");
+      console.log(`Frame ID: ${shapeId.slice(0, 8)}...`);
+      console.log(`Frame Name: ${(frame.props as { name?: string }).name || "Unnamed"}`);
+      console.log(`Path from root (${path.length} frames):`);
+      path.forEach((node, index) => {
+        const nodeFrame = editor.getShape(node.frameId);
+        const frameName = nodeFrame && nodeFrame.type === "aspect-frame"
+          ? (nodeFrame.props as { name?: string }).name || "Unnamed"
+          : "Unknown";
+        console.log(`  ${index + 1}. ${frameName} (${node.frameId.slice(0, 8)}...) - arrow: ${node.arrowId ? node.arrowId.slice(0, 8) + "..." : "null"}`);
+      });
+      console.log("=====================");
+    }
+  }, [isSelected, shapeId, frame, frameGraph, editor]);
 
   if (!frame) return null;
 
@@ -583,6 +604,14 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
           },
         },
       ]);
+
+      // Add frame node to graph
+      if (frameGraph) {
+        frameGraph.addFrameNode(newFrameId, arrowId, shapeId);
+
+        // Log the graph map
+        console.log("Frame Graph Map:", frameGraph.getGraph());
+      }
     } catch (error) {
       console.error("Failed to generate video:", error);
       toast.error("Failed to generate video");
