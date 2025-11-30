@@ -23,39 +23,37 @@ function Dashboard() {
         if (!token) return console.warn("No session");
 
         // Fetch profile row — contains credits
-        const profileRes = await fetch(`${backend_url}/api/supabase/user-row`, {
-          method: "POST",
+        const profileRes = await fetch(`${backend_url}/api/supabase/user`, {
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ table: "profiles" }),
+          }
         });
 
         if (profileRes.ok) {
           const profileData = await profileRes.json();
-          const row = profileData.row;
-          if (row?.credits !== undefined) {
-            setCredits(row.credits);
+          if (profileData?.credits !== undefined) {
+            setCredits(profileData.credits);
           }
         }
 
         // Fetch transaction log
         const transactionRes = await fetch(
-          `${backend_url}/api/supabase/user-row`,
+          `${backend_url}/api/supabase/transactions`,
           {
-            method: "POST",
+            method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ table: "transaction_log" }),
+            }
           }
         );
 
         if (transactionRes.ok) {
           const transactionData = await transactionRes.json();
-          setTransactions(transactionData.row || []);
+          // [{created_at, credit_usage, transaction_log_id, transaction_type, user_id}, ...]
+          setTransactions(transactionData || []);
         }
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
@@ -171,33 +169,32 @@ function Dashboard() {
                           >
                             <td className="py-3 px-4 text-gray-600">
                               {new Date(
-                                transaction.created_at || transaction.date
-                              ).toLocaleDateString()}
+                                transaction.created_at
+                              ).toUTCString()}
                             </td>
                             <td className="py-3 px-4 text-gray-900">
-                              {transaction.description || transaction.type}
+                              {transaction.transaction_type}
                             </td>
                             <td className="py-3 px-4">
                               <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  transaction.type === "credit" ||
-                                  transaction.type === "purchase"
+                                  transaction.credit_usage < 0
                                     ? "bg-green-100 text-green-800"
-                                    : "bg-red-100 text-red-800"
+                                    : "bg-purple-100 text-purple-800"
                                 }`}
                               >
-                                {transaction.type}
+                                {transaction.credit_usage < 0 ? "Credit" : "Purchase"}
                               </span>
                             </td>
                             <td
                               className={`py-3 px-4 text-right font-semibold ${
-                                transaction.amount > 0
+                                transaction.credit_usage < 0
                                   ? "text-green-600"
-                                  : "text-red-600"
+                                    : "text-purple-600"
                               }`}
                             >
-                              {transaction.amount > 0 ? "+" : ""}
-                              {transaction.amount}
+                              {transaction.credit_usage < 0 ? "+" : ""}
+                              {transaction.credit_usage}
                             </td>
                           </tr>
                         ))}

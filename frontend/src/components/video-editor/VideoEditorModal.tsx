@@ -162,6 +162,7 @@ const VideoEditorModal: FC<VideoEditorModalProps> = ({
           overflow: "hidden",
         }}
       >
+        <Dialog.Title className="sr-only">Video Editor</Dialog.Title>
         <Flex direction="column" style={{ height: "100%" }}>
           {/* Close button - floating */}
           <Dialog.Close>
