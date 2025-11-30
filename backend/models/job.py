@@ -24,6 +24,7 @@ class JobStatus:
     job_end_time: Optional[datetime] = None
     video_url: Optional[str] = None
     error: Optional[str] = None
+    metadata: Optional[dict] = None
 
 @dataclass
 class VideoJob:
