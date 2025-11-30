@@ -1,4 +1,4 @@
-from blacksheep import json, Request, Response
+from blacksheep import json, Request
 from blacksheep.server.controllers import APIController, get, post, put, delete
 from services.autumn_service import AutumnService
 import json as pyjson

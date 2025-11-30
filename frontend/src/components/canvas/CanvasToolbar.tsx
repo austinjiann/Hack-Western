@@ -79,7 +79,8 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
     // Call backend API to merge videos
     setIsMerging(true);
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    const backendUrl =
+      import.meta.env.VITE_BACKEND_URL;
 
     try {
       const response = await apiFetch(`${backendUrl}/api/jobs/video/merge`, {
@@ -91,8 +92,12 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(
+          errorData.error || `HTTP error! status: ${response.status}`,
+        );
       }
 
       const result = await response.json();
@@ -104,7 +109,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
       toast.success(`Successfully merged ${videoUrls.length} videos!`);
       console.log("Merged video URL:", mergedVideoUrl);
-      
+
       // Download the merged video
       try {
         const videoResponse = await fetch(mergedVideoUrl);
@@ -120,12 +125,15 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         toast.success("Video downloaded successfully!");
       } catch (downloadError) {
         console.error("Error downloading video:", downloadError);
-        toast.error("Video merged but download failed. You can access it at the URL in the console.");
+        toast.error(
+          "Video merged but download failed. You can access it at the URL in the console.",
+        );
       }
-      
     } catch (error) {
       console.error("Error merging videos:", error);
-      toast.error(`Failed to merge videos: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Failed to merge videos: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       setIsMerging(false);
     }
@@ -160,11 +168,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             style={{ cursor: isMerging ? "not-allowed" : "pointer" }}
             className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-all"
           >
-            {isMerging ? (
-              <Spinner size="1" />
-            ) : (
-              <Video size={16} />
-            )}
+            {isMerging ? <Spinner size="1" /> : <Video size={16} />}
             {isMerging ? "Merging..." : "Merge Videos"}
           </Button>
         </Tooltip>

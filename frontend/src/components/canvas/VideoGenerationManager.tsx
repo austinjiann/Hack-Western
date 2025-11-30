@@ -142,6 +142,7 @@ export const VideoGenerationManager = () => {
             }
 
             if (data.status === "done" && data.video_url) {
+              console.log("Polled job data:", data);
               // Prevent any new intervals for this job
               completedJobsRef.current.add(jobId);
 

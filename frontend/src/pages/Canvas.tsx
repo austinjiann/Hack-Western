@@ -39,7 +39,7 @@ export default function Canvas() {
                 <VideoGenerationManager />
                 <FrameGraphInitializer />
               </>
-            ),
+            )
           }}
         ></Tldraw>
         <CanvasToolbar onClear={handleClear} editorRef={editorRef} />

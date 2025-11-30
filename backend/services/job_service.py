@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Optional
 from models.job import JobStatus, VideoJobRequest, VideoJob
 from services.vertex_service import VertexService
 from utils.prompt_builder import create_video_prompt
@@ -45,7 +45,7 @@ class JobService:
             # for parallel tasks
             tasks = [
                 self.vertex_service.analyze_image_content(
-                    prompt="Describe any animation annotations you see. Use this description to inform video generation. Be descriptive about where the annotations are.",
+                    prompt="Describe any animation annotations you see. Use this description to inform a video director. Be descriptive about location and purpose of the annotations.",
                     image_data=request.starting_image
                 ),
                 self.vertex_service.generate_image_content(
@@ -78,7 +78,10 @@ class JobService:
                 job_id=job_id,
                 operation=operation,
                 request=request,
-                job_start_time=datetime.now()
+                job_start_time=datetime.now(),
+                metadata={
+                    "annotation_description": annotation_description
+                }
             )
             
             self.redis_client.delete(f"job:{job_id}:pending")
@@ -127,7 +130,6 @@ class JobService:
             return None
 
         job = self._deserialize_job(job_data)
-        
 
         result = await self.vertex_service.get_video_status(job.operation)
 
@@ -135,7 +137,8 @@ class JobService:
             status=result.status,
             job_start_time=job.job_start_time,
             job_end_time=datetime.now() if result.status == "done" else None,
-            video_url=result.video_url.replace("gs://", "https://storage.googleapis.com/") if result.video_url else None
+            video_url=result.video_url.replace("gs://", "https://storage.googleapis.com/") if result.video_url else None,
+            metadata=job.metadata
         )
 
         if result.status == "done":

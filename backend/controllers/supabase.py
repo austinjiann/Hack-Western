@@ -1,5 +1,5 @@
 from blacksheep import json, Request
-from blacksheep.server.controllers import APIController, post, get
+from blacksheep.server.controllers import APIController, get
 
 from services.supabase_service import SupabaseService
 

@@ -31,3 +31,4 @@ class VideoJob:
     request: VideoJobRequest
     job_start_time: datetime
     operation: GenerateVideosOperation
+    metadata: Optional[dict] = None

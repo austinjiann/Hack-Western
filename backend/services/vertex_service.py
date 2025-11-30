@@ -65,6 +65,13 @@ class VertexService:
             return JobStatus(status="done", job_start_time=None, video_url=operation.result.generated_videos[0].video.uri)
         return JobStatus(status="waiting", job_start_time=None, video_url=None)
     
+    async def get_video_status_by_name(self, operation_name: str) -> JobStatus:
+        """Get video status by operation name (avoids serialization)"""
+        operation = self.client.operations.get(operation_name)
+        if operation.done and operation.result and operation.result.generated_videos:
+            return JobStatus(status="done", job_start_time=None, video_url=operation.result.generated_videos[0].video.uri)
+        return JobStatus(status="waiting", job_start_time=None, video_url=None)
+    
     def analyze_video_content(self, prompt: str, video_data: bytes) -> dict:
         return self.client.models.generate_content(
             model="gemini-2.0-flash",

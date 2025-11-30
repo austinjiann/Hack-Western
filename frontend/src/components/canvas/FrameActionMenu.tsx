@@ -45,6 +45,29 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     shapeId,
   ]);
 
+  // Initialize promptText from frame meta
+  useEffect(() => {
+    if (frame?.meta?.promptText && typeof frame.meta.promptText === "string") {
+      setPromptText(frame.meta.promptText);
+    }
+  }, [frame?.id]);
+
+  // Persist promptText to frame meta whenever it changes
+  useEffect(() => {
+    if (frame && promptText !== (frame.meta?.promptText || "")) {
+      editor.updateShapes([
+        {
+          id: shapeId,
+          type: "aspect-frame",
+          meta: {
+            ...frame.meta,
+            promptText,
+          },
+        },
+      ]);
+    }
+  }, [promptText, frame, shapeId, editor]);
+
   // Log path when frame is selected
   useEffect(() => {
     if (isSelected && frame && frameGraph) {
@@ -321,7 +344,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       }
 
       const backend_url =
-        import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+        import.meta.env.VITE_BACKEND_URL;
 
       const formData = new FormData();
       formData.append("image", blob, "frame.png");

@@ -4,7 +4,6 @@ import os
 import shutil
 from moviepy import VideoFileClip, concatenate_videoclips
 from services.storage_service import StorageService
-from utils.env import settings
 import uuid
 
 class VideoMergeService:

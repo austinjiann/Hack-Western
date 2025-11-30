@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Pricing() {
   const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+    import.meta.env.VITE_BACKEND_URL;
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();

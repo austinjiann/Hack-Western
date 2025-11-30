@@ -28,7 +28,7 @@ function Dashboard() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
-          }
+          },
         });
 
         if (profileRes.ok) {
@@ -46,8 +46,8 @@ function Dashboard() {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
-            }
-          }
+            },
+          },
         );
 
         if (transactionRes.ok) {
@@ -168,9 +168,7 @@ function Dashboard() {
                             className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                           >
                             <td className="py-3 px-4 text-gray-600">
-                              {new Date(
-                                transaction.created_at
-                              ).toUTCString()}
+                              {new Date(transaction.created_at).toUTCString()}
                             </td>
                             <td className="py-3 px-4 text-gray-900">
                               {transaction.transaction_type}
@@ -183,14 +181,16 @@ function Dashboard() {
                                     : "bg-purple-100 text-purple-800"
                                 }`}
                               >
-                                {transaction.credit_usage < 0 ? "Credit" : "Purchase"}
+                                {transaction.credit_usage < 0
+                                  ? "Credit"
+                                  : "Purchase"}
                               </span>
                             </td>
                             <td
                               className={`py-3 px-4 text-right font-semibold ${
                                 transaction.credit_usage < 0
                                   ? "text-green-600"
-                                    : "text-purple-600"
+                                  : "text-purple-600"
                               }`}
                             >
                               {transaction.credit_usage < 0 ? "+" : ""}
