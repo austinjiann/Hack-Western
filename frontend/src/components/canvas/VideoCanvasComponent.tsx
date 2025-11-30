@@ -36,6 +36,10 @@ const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
 
   if (!bounds) return null;
 
+  // Find the tldraw container to portal into instead of document.body
+  // This keeps the overlay within tldraw's stacking context
+  const tldrawContainer = document.querySelector('.tl-container');
+
   return createPortal(
     <div
       className="animate-blur-pulse"
@@ -45,11 +49,11 @@ const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
         left: bounds.x,
         width: bounds.w,
         height: bounds.h,
-        zIndex: 999999,
+        zIndex: 0,
         pointerEvents: "none",
       }}
     />,
-    document.body,
+    tldrawContainer || document.body,
   );
 };
 

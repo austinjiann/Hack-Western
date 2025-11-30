@@ -138,7 +138,6 @@ class JobService:
             job_start_time=job.job_start_time,
             job_end_time=datetime.now() if result.status == "done" else None,
             video_url=result.video_url.replace("gs://", "https://storage.googleapis.com/") if result.video_url else None,
-            metadata=job.metadata
         )
 
         if result.status == "done":
