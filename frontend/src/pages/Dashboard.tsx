@@ -1,30 +1,73 @@
 import { Theme } from "@radix-ui/themes";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
-import { CreditCard, Zap, ArrowRight } from "lucide-react";
+import { Zap, ArrowRight, Receipt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+
+const backend_url = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { session } = useAuth();
 
-  // Hardcoded data for now
-  const creditUsage = {
-    total: 1000,
-    used: 342,
-    remaining: 658,
-    percentage: 34.2,
-  };
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [credits, setCredits] = useState<number | null>(null);
 
-  const billingInfo = {
-    plan: "Pro",
-    nextBilling: "March 15, 2025",
-    amount: "$29.99",
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = session?.access_token;
+        if (!token) return console.warn("No session");
+
+        // Fetch profile row — contains credits
+        const profileRes = await fetch(`${backend_url}/api/supabase/user`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          if (profileData?.credits !== undefined) {
+            setCredits(profileData.credits);
+          }
+        }
+
+        // Fetch transaction log
+        const transactionRes = await fetch(
+          `${backend_url}/api/supabase/transactions`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            }
+          }
+        );
+
+        if (transactionRes.ok) {
+          const transactionData = await transactionRes.json();
+          // [{created_at, credit_usage, transaction_log_id, transaction_type, user_id}, ...]
+          setTransactions(transactionData || []);
+        }
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [session]);
 
   return (
     <Theme>
       <div className="min-h-screen relative bg-white flex flex-col">
-        {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[24px_24px]"></div>
 
         <div className="relative z-10 flex-1 flex flex-col">
@@ -46,14 +89,13 @@ function Dashboard() {
                   onClick={() => navigate("/app")}
                   className="px-6 py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer self-start md:self-auto"
                 >
-                  Create New Project
+                  Enter Canvas
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Credit Usage & Billing Section */}
-              <div className="grid md:grid-cols-2 gap-6 mb-12">
-                {/* Credit Usage Card */}
+              {/* Credit Display  */}
+              <div className="grid md:grid-cols-1 gap-6 mb-12">
                 <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
@@ -61,78 +103,105 @@ function Dashboard() {
                         <Zap className="w-6 h-6 text-brand-pink" />
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900">
-                        Credit Usage
+                        Credit Balance
                       </h2>
                     </div>
                   </div>
+                  <p className="text-lg text-gray-800 mb-6 font-medium">
+                    {credits !== null
+                      ? `${credits} credits remaining`
+                      : "Loading credits..."}
+                  </p>
 
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-4xl font-bold text-gray-900">
-                        {creditUsage.used}
-                      </span>
-                      <span className="text-lg text-gray-500">
-                        / {creditUsage.total}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {creditUsage.remaining} credits remaining
-                    </p>
-
-                    {/* Progress Bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div
-                        className="h-full bg-linear-to-r from-brand-pink/75 to-brand-pink/25 rounded-full transition-all duration-500"
-                        style={{ width: `${creditUsage.percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <button className="w-full py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer">
+                  <button
+                    onClick={() => navigate("/pricing")}
+                    className="w-full py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer"
+                  >
                     Upgrade Plan
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
+              </div>
 
-                {/* Billing Card */}
-                <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-brand-pink/10 rounded-xl">
-                        <CreditCard className="w-6 h-6 text-brand-pink" />
-                      </div>
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        Billing
-                      </h2>
-                    </div>
+              {/* Transaction Log */}
+              <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-3 bg-brand-pink/10 rounded-xl">
+                    <Receipt className="w-6 h-6 text-brand-pink" />
                   </div>
-
-                  <div className="space-y-4 mb-6">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Current Plan</span>
-                      <span className="font-semibold text-gray-900">
-                        {billingInfo.plan}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Next Billing</span>
-                      <span className="font-semibold text-gray-900">
-                        {billingInfo.nextBilling}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                      <span className="text-gray-600">Amount</span>
-                      <span className="text-2xl font-bold text-gray-900">
-                        {billingInfo.amount}
-                      </span>
-                    </div>
-                  </div>
-
-                  <button className="w-full py-3 bg-white text-black/75 font-semibold rounded-xl hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-black/10 border border-gray-200 cursor-pointer">
-                    Manage Billing
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Transaction Log
+                  </h2>
                 </div>
+
+                {loading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Loading transactions...
+                  </div>
+                ) : transactions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No transactions yet
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                            Date
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                            Description
+                          </th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+                            Type
+                          </th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-700">
+                            Amount
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transactions.map((transaction, index) => (
+                          <tr
+                            key={index}
+                            className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+                          >
+                            <td className="py-3 px-4 text-gray-600">
+                              {new Date(
+                                transaction.created_at
+                              ).toUTCString()}
+                            </td>
+                            <td className="py-3 px-4 text-gray-900">
+                              {transaction.transaction_type}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  transaction.credit_usage < 0
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
+                              >
+                                {transaction.credit_usage < 0 ? "Credit" : "Purchase"}
+                              </span>
+                            </td>
+                            <td
+                              className={`py-3 px-4 text-right font-semibold ${
+                                transaction.credit_usage < 0
+                                  ? "text-green-600"
+                                    : "text-purple-600"
+                              }`}
+                            >
+                              {transaction.credit_usage < 0 ? "+" : ""}
+                              {transaction.credit_usage}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </main>

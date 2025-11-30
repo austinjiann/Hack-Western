@@ -50,6 +50,7 @@ export const CanvasNavigationMenu: React.FC = () => {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <Dialog.Content className="fixed z-50 bottom-24 left-6 w-64 bg-white/90 backdrop-blur-md border border-gray-200/50 rounded-2xl p-4 shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-300 ease-in-out">
+          <Dialog.Title className="sr-only">Navigation Menu</Dialog.Title>
           <div className="flex flex-col gap-2">
             {menuItems.map((item) => {
               const Icon = item.icon;

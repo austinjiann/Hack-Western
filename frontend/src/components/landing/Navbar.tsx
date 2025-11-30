@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 100);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -93,7 +93,7 @@ const Navbar: React.FC = () => {
             <button
               onClick={() => navigate("/dashboard")}
               className={`
-              flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 border border-gray-200/50 cursor-pointer hover:bg-white/80
+              flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80
               ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
             `}
             >
@@ -117,13 +117,12 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={handleLogout}
                   className={`
-                  flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
+                  flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer
                   ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
                 `}
                 >
                   <LogOut className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
                   <span className="relative z-10">Logout</span>
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </button>
               </>
             ) : (
@@ -131,7 +130,7 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => navigate("/login")}
                   className={`
-                  flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 border border-gray-200/50 cursor-pointer hover:bg-white/80
+                  flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80
                   ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
                 `}
                 >
@@ -141,7 +140,7 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => navigate("/app")}
                   className={`
-                  relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 border border-white/10 cursor-pointer
+                  relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer
                   ${isScrolled ? "px-4 py-1.5 text-xs" : "px-6 py-2 text-sm"}
                 `}
                 >

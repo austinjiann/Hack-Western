@@ -64,17 +64,31 @@ class SupabaseService:
             print(f"Failed to do transaction: {e}")
             pass
         
-    def get_user_row(self, user_id: str, table: str):
+    def get_user_row(self, user_id: str):
         """ fetches user row """
         try:
             return (
                 self.supabase
-                .table(table)    
-                .select("*")       
-                .eq("id", user_id) 
-                .single()          
+                .table("profiles")    
+                .select("*")
+                .eq("user_id", user_id) 
+                .single()
                 .execute()
             )
         except Exception:
             return None
 
+    def get_transaction_log(self, user_id: str):
+        """ fetches transaction log for user """
+        try:
+            return (
+                self.supabase
+                .table("transaction_log")    
+                .select("*")
+                .eq("user_id", user_id) 
+                .order("created_at", desc=True)
+                .execute()
+            )
+        except Exception:
+            return None
+        
