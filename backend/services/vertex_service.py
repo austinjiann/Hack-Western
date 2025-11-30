@@ -94,7 +94,7 @@ class VertexService:
                 ),
                 prompt
                 ]
-        )
+        ).candidates[0].content.parts[0].text.strip()
     
 
     async def test_service(self):

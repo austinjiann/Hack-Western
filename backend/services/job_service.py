@@ -16,12 +16,14 @@ class JobService:
         self.vertex_service = vertex_service
         self.redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=False)
 
-    def _serialize_job(self, job: VideoJob) -> str | bytes:
-        """Serialize + compress VideoJob to bytes using pickle for Redis storage"""
-        return blosc.compress(pickle.dumps(job))
+    def _serialize(self, data: dict | VideoJob) -> bytes:
+        """Serialize + compress any data to bytes for Redis storage"""
+        return blosc.compress(pickle.dumps(data))
     
-    def _deserialize_job(self, data: bytes) -> Optional[VideoJob]:
-        """Deserialize + compress bytes to VideoJob from Redis storage"""
+    def _deserialize(self, data: bytes) -> Optional[dict | VideoJob]:
+        """Deserialize + decompress bytes from Redis storage"""
+        if not data:
+            return None
         return pickle.loads(blosc.decompress(data))
 
     async def create_video_job(self, request: VideoJobRequest) -> str:
@@ -32,7 +34,8 @@ class JobService:
             "status": "pending",
             "job_start_time": datetime.now().isoformat()
         }
-        self.redis_client.setex(f"job:{job_id}:pending", 100, pickle.dumps(pending_job))
+        # Store pending job BEFORE starting background task to avoid 404 race condition
+        self.redis_client.setex(f"job:{job_id}:pending", 300, self._serialize(pending_job))
         
         # start background task
         asyncio.create_task(self._process_video_job(job_id, request))
@@ -49,7 +52,7 @@ class JobService:
                     image_data=request.starting_image
                 ),
                 self.vertex_service.generate_image_content(
-                    prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version of the image with no text. Keep the art/image style the exact same.",
+                    prompt="Remove all text, captions, subtitles, annotations from this image. Generate a clean version of the image with no text. Keep everything else the exact same.",
                     image=request.starting_image
                 )
             ]
@@ -78,14 +81,14 @@ class JobService:
                 job_id=job_id,
                 operation=operation,
                 request=request,
-                job_start_time=datetime.now(),
+                job_start_time=datetime.now(), # goes against naming here, this is actually end time of the job
                 metadata={
                     "annotation_description": annotation_description
                 }
             )
             
             self.redis_client.delete(f"job:{job_id}:pending")
-            self.redis_client.setex(f"job:{job_id}", 300, self._serialize_job(job))
+            self.redis_client.setex(f"job:{job_id}", 300, self._serialize(job))
             
         except Exception as e:
             # debug stuff
@@ -97,13 +100,13 @@ class JobService:
                 "job_start_time": datetime.now().isoformat()
             }
             self.redis_client.delete(f"job:{job_id}:pending")
-            self.redis_client.setex(f"job:{job_id}:error", 300, pickle.dumps(error_job))
+            self.redis_client.setex(f"job:{job_id}:error", 300, self._serialize(error_job))
 
     async def get_video_job_status(self, job_id: str) -> JobStatus:
         # Check if job is still pending
         pending_data = self.redis_client.get(f"job:{job_id}:pending")
         if pending_data:
-            pending_job = pickle.loads(pending_data)
+            pending_job = self._deserialize(pending_data)
             return JobStatus(
                 status="waiting",
                 job_start_time=datetime.fromisoformat(pending_job["job_start_time"]),
@@ -114,7 +117,7 @@ class JobService:
         # Check if job failed
         error_data = self.redis_client.get(f"job:{job_id}:error")
         if error_data:
-            error_job = pickle.loads(error_data)
+            error_job = self._deserialize(error_data)
             return JobStatus(
                 status="error",
                 job_start_time=datetime.fromisoformat(error_job["job_start_time"]),
@@ -129,7 +132,7 @@ class JobService:
         if job_data is None: # if job not found
             return None
 
-        job = self._deserialize_job(job_data)
+        job = self._deserialize(job_data)
 
         result = await self.vertex_service.get_video_status(job.operation)
 
@@ -138,6 +141,7 @@ class JobService:
             job_start_time=job.job_start_time,
             job_end_time=datetime.now() if result.status == "done" else None,
             video_url=result.video_url.replace("gs://", "https://storage.googleapis.com/") if result.video_url else None,
+            metadata=job.metadata
         )
 
         if result.status == "done":

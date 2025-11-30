@@ -1,7 +1,7 @@
-import { Theme } from "@radix-ui/themes";
+import { Theme, DropdownMenu, Button } from "@radix-ui/themes";
 import Navbar from "../components/landing/Navbar";
 import Footer from "../components/landing/Footer";
-import { Zap, ArrowRight, Receipt } from "lucide-react";
+import { Zap, ArrowRight, Receipt, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
@@ -15,6 +15,7 @@ function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState<number | null>(null);
+  const [displayLimit, setDisplayLimit] = useState<number | "all">(20);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -125,13 +126,41 @@ function Dashboard() {
 
               {/* Transaction Log */}
               <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-3 bg-brand-pink/10 rounded-xl">
-                    <Receipt className="w-6 h-6 text-brand-pink" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-brand-pink/10 rounded-xl">
+                      <Receipt className="w-6 h-6 text-brand-pink" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      Transaction Log
+                    </h2>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    Transaction Log
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Show:</span>
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger>
+                        <Button variant="soft" color="gray" className="cursor-pointer">
+                          {displayLimit === "all" ? "All" : `Last ${displayLimit}`}
+                          <ChevronDown className="w-4 h-4 ml-1" />
+                        </Button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Content>
+                        <DropdownMenu.Item onSelect={() => setDisplayLimit(10)}>
+                          Last 10
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => setDisplayLimit(20)}>
+                          Last 20
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item onSelect={() => setDisplayLimit(50)}>
+                          Last 50
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Separator />
+                        <DropdownMenu.Item onSelect={() => setDisplayLimit("all")}>
+                          All
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Root>
+                  </div>
                 </div>
 
                 {loading ? (
@@ -162,7 +191,7 @@ function Dashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {transactions.map((transaction, index) => (
+                        {(displayLimit === "all" ? transactions : transactions.slice(0, displayLimit)).map((transaction, index) => (
                           <tr
                             key={index}
                             className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
@@ -200,6 +229,11 @@ function Dashboard() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+                )}
+                {transactions.length > 0 && (
+                  <div className="mt-4 text-sm text-gray-500 text-center">
+                    Showing {displayLimit === "all" ? transactions.length : Math.min(displayLimit, transactions.length)} of {transactions.length} transactions
                   </div>
                 )}
               </div>

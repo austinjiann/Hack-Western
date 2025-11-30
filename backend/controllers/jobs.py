@@ -63,13 +63,20 @@ class Jobs(APIController):
                 "status": "error",
                 "error_message": jobStatus.error
             }, status=500)
-
+        
+        if jobStatus.status == "waiting":
+            return json({
+                "status": "waiting",
+                "job_start_time": jobStatus.job_start_time.isoformat()
+            }, status=202)
+        
         return json({
             "status": jobStatus.status,
             "job_start_time": jobStatus.job_start_time.isoformat(),
             "job_end_time": jobStatus.job_end_time.isoformat() if jobStatus.job_end_time else None,
-            "video_url": jobStatus.video_url
-        })
+            "video_url": jobStatus.video_url,
+            "metadata": jobStatus.metadata
+        }, status=200)
 
     # DEV MOCK ENDPOINTS
     @post("/video/mock")
