@@ -28,7 +28,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 
     // Get selected shapes
     const selectedIds = editor.getSelectedShapeIds();
-    
+
     // Find the selected frame
     const selectedFrame = selectedIds
       .map((id) => editor.getShape(id))
@@ -54,7 +54,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
     // Traverse the path (skip the root frame, start from the first child)
     for (let i = 1; i < path.length; i++) {
       const node = path[i];
-      
+
       // Get the arrow for this node
       if (node.arrowId) {
         const arrow = editor.getShape(node.arrowId);

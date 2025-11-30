@@ -73,7 +73,7 @@ export async function mergeVideosClient(
       resolve(blob);
     };
 
-    mediaRecorder.onerror = (_event) => {
+    mediaRecorder.onerror = () => {
       reject(new Error("MediaRecorder error"));
     };
 

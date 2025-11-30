@@ -9,7 +9,10 @@ export async function getAccessToken(): Promise<string | null> {
   }
 }
 
-export async function apiFetch(input: string, init: RequestInit = {}): Promise<Response> {
+export async function apiFetch(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
   const headers = new Headers(init.headers || {});
 
   // Don't override existing Authorization header

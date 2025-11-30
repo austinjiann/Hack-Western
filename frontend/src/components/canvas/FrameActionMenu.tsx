@@ -37,7 +37,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
   const isSelected = useValue(
     "is selected",
     () => editor.getSelectedShapeIds().includes(shapeId),
-    [editor, shapeId]
+    [editor, shapeId],
   );
 
   const frame = useValue("frame", () => editor.getShape(shapeId), [
@@ -51,14 +51,19 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       const path = frameGraph.getFramePath(shapeId);
       console.log("=== Frame Selected ===");
       console.log(`Frame ID: ${shapeId.slice(0, 8)}...`);
-      console.log(`Frame Name: ${(frame.props as { name?: string }).name || "Unnamed"}`);
+      console.log(
+        `Frame Name: ${(frame.props as { name?: string }).name || "Unnamed"}`,
+      );
       console.log(`Path from root (${path.length} frames):`);
       path.forEach((node, index) => {
         const nodeFrame = editor.getShape(node.frameId);
-        const frameName = nodeFrame && nodeFrame.type === "aspect-frame"
-          ? (nodeFrame.props as { name?: string }).name || "Unnamed"
-          : "Unknown";
-        console.log(`  ${index + 1}. ${frameName} (${node.frameId.slice(0, 8)}...) - arrow: ${node.arrowId ? node.arrowId.slice(0, 8) + "..." : "null"}`);
+        const frameName =
+          nodeFrame && nodeFrame.type === "aspect-frame"
+            ? (nodeFrame.props as { name?: string }).name || "Unnamed"
+            : "Unknown";
+        console.log(
+          `  ${index + 1}. ${frameName} (${node.frameId.slice(0, 8)}...) - arrow: ${node.arrowId ? node.arrowId.slice(0, 8) + "..." : "null"}`,
+        );
       });
       console.log("=====================");
     }
@@ -70,7 +75,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
   const showTextBox = isSelected || promptText.trim() !== "";
 
   const handleBackgroundColorChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     e.stopPropagation();
     editor.updateShapes([
@@ -168,7 +173,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       // Convert byte array to base64
       const bytes = new Uint8Array(imageBytes);
       const binaryString = Array.from(bytes, (byte) =>
-        String.fromCharCode(byte)
+        String.fromCharCode(byte),
       ).join("");
       base64String = btoa(binaryString);
     } else if (typeof imageBytes === "string") {
@@ -176,9 +181,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       if (imageBytes.startsWith("data:image/")) {
         const commaIndex = imageBytes.indexOf(",");
         base64String =
-          commaIndex !== -1
-            ? imageBytes.substring(commaIndex + 1)
-            : imageBytes;
+          commaIndex !== -1 ? imageBytes.substring(commaIndex + 1) : imageBytes;
       } else {
         base64String = imageBytes;
       }
@@ -200,7 +203,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       try {
         atob(cleanedBase64.substring(0, Math.min(100, cleanedBase64.length)));
         canDecode = true;
-      } catch (e) {
+      } catch {
         // Will clean below
       }
 
@@ -212,7 +215,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         try {
           atob(cleanedBase64);
           base64String = cleanedBase64;
-        } catch (e) {
+        } catch {
           canDecode = false;
         }
       }
@@ -229,13 +232,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
           atob(testBase64.substring(0, Math.min(10000, testBase64.length)));
           atob(testBase64);
           base64String = testBase64;
-        } catch (e) {
+        } catch {
           throw new Error("Could not create valid base64 from response");
         }
       }
     } else {
       throw new Error(
-        `Invalid image data format: ${typeof imageBytes}. Expected array or string.`
+        `Invalid image data format: ${typeof imageBytes}. Expected array or string.`,
       );
     }
 
@@ -247,13 +250,13 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     try {
       atob(base64String);
       return `data:image/png;base64,${base64String}`;
-    } catch (decodeError) {
+    } catch {
       throw new Error("Invalid base64 string - cannot decode image data");
     }
   };
 
   const validateImageLoad = async (
-    dataUrl: string
+    dataUrl: string,
   ): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -400,7 +403,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
       editor.updateInstanceState({ isReadonly: false });
     } catch (error) {
       toast.error(
-        `Failed to improve frame: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to improve frame: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
       setIsImproving(false);
 
@@ -484,7 +487,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     formData.append("custom_prompt", promptText);
     formData.append(
       "global_context",
-      JSON.stringify(context?.sceneState ?? {})
+      JSON.stringify(context?.sceneState ?? {}),
     );
     formData.append("files", blob);
 

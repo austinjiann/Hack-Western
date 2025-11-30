@@ -38,4 +38,3 @@ export const useFrameGraphContext = () => {
   const context = useContext(FrameGraphContext);
   return context; // Return null if not available (e.g., during SVG export)
 };
-

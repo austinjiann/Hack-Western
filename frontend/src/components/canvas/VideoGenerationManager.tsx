@@ -388,8 +388,8 @@ export const VideoGenerationManager = () => {
     return () => {
       // Clear the check interval
       if (checkInterval) {
-          window.clearInterval(checkInterval);
-        }
+        window.clearInterval(checkInterval);
+      }
       // Clear all job-specific intervals
       intervalsRef.current.forEach((intervalId) => {
         window.clearInterval(intervalId);

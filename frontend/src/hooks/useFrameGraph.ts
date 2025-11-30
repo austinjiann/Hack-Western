@@ -104,47 +104,41 @@ export const useFrameGraph = (editor: Editor | null) => {
   /**
    * Gets the path from root to a specific frame
    */
-  const getFramePath = useCallback(
-    (frameId: TLShapeId): FrameNode[] => {
-      const path: FrameNode[] = [];
-      let currentId: TLShapeId | null = frameId;
+  const getFramePath = useCallback((frameId: TLShapeId): FrameNode[] => {
+    const path: FrameNode[] = [];
+    let currentId: TLShapeId | null = frameId;
 
-      while (currentId) {
-        const node = graphRef.current.get(currentId);
-        if (!node) break;
-        path.unshift(node);
-        currentId = node.parentId;
-      }
+    while (currentId) {
+      const node = graphRef.current.get(currentId);
+      if (!node) break;
+      path.unshift(node);
+      currentId = node.parentId;
+    }
 
-      return path;
-    },
-    [],
-  );
+    return path;
+  }, []);
 
   /**
    * Gets all descendants of a frame
    */
-  const getFrameDescendants = useCallback(
-    (frameId: TLShapeId): FrameNode[] => {
-      const descendants: FrameNode[] = [];
-      const node = graphRef.current.get(frameId);
-      if (!node) return descendants;
+  const getFrameDescendants = useCallback((frameId: TLShapeId): FrameNode[] => {
+    const descendants: FrameNode[] = [];
+    const node = graphRef.current.get(frameId);
+    if (!node) return descendants;
 
-      const traverse = (currentNode: FrameNode) => {
-        for (const childId of currentNode.children.values()) {
-          const childNode = graphRef.current.get(childId);
-          if (childNode) {
-            descendants.push(childNode);
-            traverse(childNode);
-          }
+    const traverse = (currentNode: FrameNode) => {
+      for (const childId of currentNode.children.values()) {
+        const childNode = graphRef.current.get(childId);
+        if (childNode) {
+          descendants.push(childNode);
+          traverse(childNode);
         }
-      };
+      }
+    };
 
-      traverse(node);
-      return descendants;
-    },
-    [],
-  );
+    traverse(node);
+    return descendants;
+  }, []);
 
   /**
    * Gets the branch index for a child frame
@@ -232,10 +226,12 @@ export const useFrameGraph = (editor: Editor | null) => {
         frameId: node.frameId,
         arrowId: node.arrowId,
         parentId: node.parentId,
-        children: Array.from(node.children.entries()).map(([index, childId]) => ({
-          index,
-          frameId: childId,
-        })),
+        children: Array.from(node.children.entries()).map(
+          ([index, childId]) => ({
+            index,
+            frameId: childId,
+          }),
+        ),
       };
     }
     return graphObj;
@@ -260,4 +256,3 @@ export const useFrameGraph = (editor: Editor | null) => {
     getGraph,
   };
 };
-

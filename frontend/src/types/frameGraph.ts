@@ -20,4 +20,3 @@ export interface FrameNode {
  * Frame graph structure - Map of frameId to FrameNode
  */
 export type FrameGraph = Map<TLShapeId, FrameNode>;
-

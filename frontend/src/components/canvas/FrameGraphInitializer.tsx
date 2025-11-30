@@ -23,7 +23,10 @@ export const FrameGraphInitializer = () => {
       (shape) => {
         if (shape.type === "aspect-frame") {
           frameGraph.removeFrameNode(shape.id);
-          console.log("Frame Graph Map (After Deletion):", frameGraph.getGraph());
+          console.log(
+            "Frame Graph Map (After Deletion):",
+            frameGraph.getGraph(),
+          );
         }
       },
     );
@@ -35,4 +38,3 @@ export const FrameGraphInitializer = () => {
 
   return null;
 };
-

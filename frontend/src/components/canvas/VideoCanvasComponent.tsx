@@ -14,7 +14,6 @@ import {
 import { createPortal } from "react-dom";
 import { FrameActionMenu } from "./FrameActionMenu";
 
-
 const FrameOverlay = ({ shapeId }: { shapeId: string }) => {
   const editor = useEditor();
 
@@ -77,7 +76,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
     isLocked: T.boolean.optional(),
   };
 
-  override isAspectRatioLocked(_shape: IFrameShape) {
+  override isAspectRatioLocked() {
     return true;
   }
 
@@ -176,7 +175,14 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
           {shape.props.name || "16:9 Frame"}
         </div>
 
-        <div style={{ position: "relative", zIndex: 10, opacity: 1, pointerEvents: "auto" }}>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 10,
+            opacity: 1,
+            pointerEvents: "auto",
+          }}
+        >
           <FrameActionMenu shapeId={shape.id} />
         </div>
       </HTMLContainer>
@@ -187,7 +193,7 @@ export class FrameShapeUtil extends BaseBoxShapeUtil<IFrameShape> {
     return <rect width={shape.props.w} height={shape.props.h} />;
   }
 
-  override canResize(_shape: IFrameShape) {
+  override canResize() {
     return false;
   }
 

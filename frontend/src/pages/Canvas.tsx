@@ -34,12 +34,12 @@ export default function Canvas() {
                 <ArrowActionMenu />
               </>
             ),
-          InFrontOfTheCanvas: () => (
-            <>
-              <VideoGenerationManager />
-              <FrameGraphInitializer />
-            </>
-          ),
+            InFrontOfTheCanvas: () => (
+              <>
+                <VideoGenerationManager />
+                <FrameGraphInitializer />
+              </>
+            ),
           }}
         ></Tldraw>
         <CanvasToolbar onClear={handleClear} editorRef={editorRef} />

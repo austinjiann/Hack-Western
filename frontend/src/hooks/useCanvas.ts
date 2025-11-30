@@ -191,17 +191,17 @@ export const useCanvas = () => {
     const shapes = editor.getCurrentPageShapesSorted();
 
     // Get children of the first frame to delete them
-    const firstFrameChildren = firstFrameId 
+    const firstFrameChildren = firstFrameId
       ? editor.getSortedChildIdsForParent(firstFrameId)
       : [];
 
     const shapesToDelete = shapes
       .filter((s) => s.id !== firstFrameId)
       .map((s) => s.id);
-    
+
     // Delete all shapes except the first frame
     editor.deleteShapes(shapesToDelete);
-    
+
     // Also delete children of the first frame
     if (firstFrameChildren.length > 0) {
       editor.deleteShapes(firstFrameChildren);
