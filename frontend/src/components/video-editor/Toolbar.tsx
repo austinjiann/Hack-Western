@@ -9,6 +9,7 @@ interface ToolbarProps {
   onTrim?: () => void;
   onCrop?: () => void;
   onSave?: () => void;
+  onDownload?: () => void;
   selectedClipId?: string | null;
   currentSpeed?: number;
   isSaving?: boolean;
@@ -34,6 +35,7 @@ const Toolbar: FC<ToolbarProps> = ({
   onTrim,
   onCrop,
   onSave,
+  onDownload,
   selectedClipId,
   currentSpeed = 1,
   isSaving = false,
@@ -194,6 +196,28 @@ const Toolbar: FC<ToolbarProps> = ({
                 <span>Save</span>
               </>
             )}
+          </button>
+        )}
+
+        {onDownload && (
+          <button
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-900 text-sm font-medium font-sans hover:bg-gray-100 active:scale-95 active:bg-black/10"
+            onClick={onDownload}
+            title="Download video"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>Download</span>
           </button>
         )}
 
