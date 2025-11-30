@@ -1,4 +1,4 @@
-import { Tldraw, Editor } from "tldraw";
+import { Tldraw, Editor, DefaultQuickActions, DefaultQuickActionsContent, TldrawUiMenuItem } from "tldraw";
 import "tldraw/tldraw.css";
 import { useState } from "react";
 import { useCanvas } from "../hooks/useCanvas";
@@ -39,6 +39,12 @@ export default function Canvas() {
                 <VideoGenerationManager />
                 <FrameGraphInitializer />
               </>
+            ),
+            QuickActions: () => (
+              <DefaultQuickActions >
+                <TldrawUiMenuItem id="profile" icon="github" onSelect={() => {open("https://github.com/austinjiann/flowboard")}} />
+                <DefaultQuickActionsContent />
+              </DefaultQuickActions>
             )
           }}
         ></Tldraw>

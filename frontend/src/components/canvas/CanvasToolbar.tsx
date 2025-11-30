@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Flex, Tooltip, Spinner } from "@radix-ui/themes";
-import { Eraser, Video } from "lucide-react";
+import { Eraser, Video, Coins } from "lucide-react";
 import { Editor } from "tldraw";
 import { toast } from "sonner";
 import { useFrameGraphContext } from "../../contexts/FrameGraphContext";
 import { apiFetch } from "../../utils/api";
+import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface CanvasToolbarProps {
   onClear: () => void;
@@ -17,6 +19,57 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
 }) => {
   const frameGraph = useFrameGraphContext();
   const [isMerging, setIsMerging] = useState(false);
+  const { user } = useAuth();
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setCredits(null);
+      return;
+    }
+
+    // Fetch initial credits
+    const fetchCredits = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("credits")
+          .eq("user_id", user.id)
+          .single();
+
+        if (error) throw error;
+        setCredits(data?.credits ?? 0);
+      } catch (error) {
+        console.error("Error fetching credits:", error);
+        setCredits(0);
+      }
+    };
+
+    fetchCredits();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel(`credits-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "users",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          if (payload.new && typeof payload.new.credits === "number") {
+            setCredits(payload.new.credits);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   const handleMergeVideos = async () => {
     if (!editorRef.current) {
@@ -145,6 +198,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
         p="2"
         className="rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-xl bg-white/40"
       >
+
         <Tooltip content="Clear Canvas">
           <Button
             variant="surface"
@@ -171,6 +225,17 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
             {isMerging ? "Merging..." : "Merge Videos"}
           </Button>
         </Tooltip>
+        {user && (
+          <Tooltip content="Credits Remaining">
+            <Button
+              variant="surface"
+              className="backdrop-blur-sm bg-white/50 hover:bg-white/80 transition-all cursor-default"
+            >
+              <Coins size={16} />
+              {credits !== null ? credits : "..."} Credit{credits === 1 ? "" : "s"}
+            </Button>
+          </Tooltip>
+        )}
       </Flex>
     </div>
   );
