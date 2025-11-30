@@ -108,7 +108,6 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
       }
 
       toast.success(`Successfully merged ${videoUrls.length} videos!`);
-      console.log("Merged video URL:", mergedVideoUrl);
 
       // Download the merged video
       try {

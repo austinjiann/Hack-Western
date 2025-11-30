@@ -77,29 +77,6 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
     return () => clearTimeout(timeoutId);
   }, [promptText, shapeId]);
 
-  // Log path when frame is selected
-  useEffect(() => {
-    if (isSelected && frame && frameGraph) {
-      const path = frameGraph.getFramePath(shapeId);
-      console.log("=== Frame Selected ===");
-      console.log(`Frame ID: ${shapeId.slice(0, 8)}...`);
-      console.log(
-        `Frame Name: ${(frame.props as { name?: string }).name || "Unnamed"}`,
-      );
-      console.log(`Path from root (${path.length} frames):`);
-      path.forEach((node, index) => {
-        const nodeFrame = editor.getShape(node.frameId);
-        const frameName =
-          nodeFrame && nodeFrame.type === "aspect-frame"
-            ? (nodeFrame.props as { name?: string }).name || "Unnamed"
-            : "Unknown";
-        console.log(
-          `  ${index + 1}. ${frameName} (${node.frameId.slice(0, 8)}...) - arrow: ${node.arrowId ? node.arrowId.slice(0, 8) + "..." : "null"}`,
-        );
-      });
-      console.log("=====================");
-    }
-  }, [isSelected, shapeId, frame, frameGraph, editor]);
 
   if (!frame) return null;
 
@@ -556,6 +533,7 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
           x: newFrameX,
           y: newFrameY,
           parentId: pageId,
+          isLocked: true, // Lock the frame while generating to prevent movement
           props: {
             w: frameW,
             h: frameH,
@@ -584,10 +562,15 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
             x: sourceImageShape.x,
             y: sourceImageShape.y,
             parentId: newFrameId,
+            isLocked: true, // Lock placeholder image to make it unselectable
             props: {
               assetId: imageProps.assetId,
               w: imageProps.w,
               h: imageProps.h,
+            },
+            meta: {
+              isPlaceholder: true,
+              jobId: jobId, // Store jobId to identify this placeholder
             },
           },
         ]);
@@ -645,7 +628,6 @@ export const FrameActionMenu = ({ shapeId }: { shapeId: TLShapeId }) => {
         frameGraph.addFrameNode(newFrameId, arrowId, shapeId);
 
         // Log the graph map
-        console.log("Frame Graph Map:", frameGraph.getGraph());
       }
     } catch (error) {
       console.error("Failed to generate video:", error);

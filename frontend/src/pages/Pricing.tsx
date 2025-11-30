@@ -40,7 +40,6 @@ export default function Pricing() {
       });
 
       const result = await response.json();
-      console.log("Checkout result:", result);
 
       if (result.url || result.checkout_url) {
         window.location.href = result.url || result.checkout_url;

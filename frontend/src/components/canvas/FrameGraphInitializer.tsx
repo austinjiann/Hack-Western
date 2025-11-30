@@ -15,7 +15,6 @@ export const FrameGraphInitializer = () => {
 
     // Reconstruct graph from existing frames and arrows
     frameGraph.reconstructGraph();
-    console.log("Frame Graph Map (Initialized):", frameGraph.getGraph());
 
     // Register handler for frame deletions
     const unsubscribe = editor.sideEffects.registerBeforeDeleteHandler(
@@ -23,10 +22,7 @@ export const FrameGraphInitializer = () => {
       (shape) => {
         if (shape.type === "aspect-frame") {
           frameGraph.removeFrameNode(shape.id);
-          console.log(
-            "Frame Graph Map (After Deletion):",
-            frameGraph.getGraph(),
-          );
+
         }
       },
     );

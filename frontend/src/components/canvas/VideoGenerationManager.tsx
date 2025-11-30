@@ -142,7 +142,6 @@ export const VideoGenerationManager = () => {
             }
 
             if (data.status === "done" && data.video_url) {
-              console.log("Polled job data:", data);
               // Prevent any new intervals for this job
               completedJobsRef.current.add(jobId);
 
@@ -228,11 +227,12 @@ export const VideoGenerationManager = () => {
                   const frameW = (targetFrame.props as any).w || 960;
                   const frameH = (targetFrame.props as any).h || 540;
 
-                  // Update frame name
+                  // Update frame name and unlock it
                   editor.updateShapes([
                     {
                       id: targetFrameId,
                       type: "aspect-frame",
+                      isLocked: false, // Unlock the frame when generation completes
                       props: {
                         ...targetFrame.props,
                         name: "Generated Frame",
@@ -296,6 +296,21 @@ export const VideoGenerationManager = () => {
                             };
 
                             editor.createAssets([asset]);
+
+                            // Delete placeholder image if it exists
+                            const targetFrameChildren = editor.getSortedChildIdsForParent(
+                              targetFrameId,
+                            );
+                            const placeholderImage = targetFrameChildren
+                              .map((id) => editor.getShape(id))
+                              .find(
+                                (shape) =>
+                                  shape?.type === "image" &&
+                                  shape?.meta?.isPlaceholder === true,
+                              );
+                            if (placeholderImage) {
+                              editor.deleteShapes([placeholderImage.id]);
+                            }
 
                             const scale = Math.min(
                               frameW / video.videoWidth,

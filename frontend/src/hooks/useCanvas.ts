@@ -277,6 +277,20 @@ export const useCanvas = () => {
 
       // Register side effect to prevent frame overlap and lock arrow movement
       editor.sideEffects.registerBeforeChangeHandler("shape", (prev, next) => {
+        // Prevent generating frames from moving
+        if (next.type === "aspect-frame") {
+          const nextName = "name" in next.props ? (next.props.name as string) : "";
+          const prevName = "name" in prev.props ? (prev.props.name as string) : "";
+          
+          // If frame is being generated, prevent position changes
+          if (nextName === "Generating..." || prevName === "Generating...") {
+            // Only block if position is changing
+            if (prev.x !== next.x || prev.y !== next.y) {
+              return prev;
+            }
+          }
+        }
+
         // Arrow Logic: Prevent individual movement
         if (next.type === "arrow") {
           const selectedIds = editor.getSelectedShapeIds();
@@ -379,13 +393,25 @@ export const useCanvas = () => {
         }
       });
 
-      // Register listener to select frame when clicking on its children
+      // Prevent placeholder images from being selected
       editor.sideEffects.registerAfterChangeHandler(
         "instance_page_state",
         (prev, next) => {
           if (prev.pageId !== next.pageId) {
             ensureTutorialLayout(editor, { immediate: true });
           }
+          
+          // Filter out placeholder images from selection
+          const selectedIds = editor.getSelectedShapeIds();
+          const placeholderIds = selectedIds.filter((id) => {
+            const shape = editor.getShape(id);
+            return shape?.type === "image" && shape?.meta?.isPlaceholder === true;
+          });
+          
+          if (placeholderIds.length > 0) {
+            editor.setSelectedShapes(selectedIds.filter((id) => !placeholderIds.includes(id)));
+          }
+          
           return next;
         },
       );
