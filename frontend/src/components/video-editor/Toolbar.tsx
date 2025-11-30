@@ -201,7 +201,7 @@ const Toolbar: FC<ToolbarProps> = ({
 
         {onDownload && (
           <button
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-900 text-sm font-medium font-sans hover:bg-gray-100 active:scale-95 active:bg-black/10"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-white text-sm font-medium font-sans bg-brand-pink/50 hover:bg-brand-pink/60 active:scale-95 active:bg-brand-pink/70"
             onClick={onDownload}
             title="Download video"
           >

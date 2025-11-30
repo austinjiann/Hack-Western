@@ -141,13 +141,13 @@ export default function Pricing() {
               Pay as you go
             </Heading>
             <Text size="4" color="gray" className="max-w-2xl">
-              Purchase credits and use them for video generation or image
+              Purchase credits for video generation or image
               enhancement. Credits never expire.
             </Text>
             <Flex
               gap="6"
               mt="4"
-              className="border border-gray-200 px-6 py-3 rounded-lg bg-white shadow-sm"
+              className="border border-gray-200 px-6 py-3 rounded-lg bg-white shadow-sm text-brand-pink/75"
             >
               <Flex gap="2" align="center">
                 <Video size={16} />
@@ -203,9 +203,9 @@ export default function Pricing() {
             {/* Starter Pack */}
             <Card
               size="3"
-              className="p-6 relative overflow-hidden border-2 border-black"
+              className="p-6 relative overflow-hidden border-2 border-brand-pink/50"
             >
-              <div className="absolute top-0 right-0 bg-black text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-brand-pink/50 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                 POPULAR
               </div>
               <Flex direction="column" height="100%" gap="5">
@@ -233,7 +233,7 @@ export default function Pricing() {
 
                 <Button
                   size="3"
-                  className="w-full bg-black text-white hover:bg-gray-800 cursor-pointer mt-4"
+                  className="w-full bg-brand-pink/75! hover:bg-brand-pink/70! text-white cursor-pointer! mt-4"
                   onClick={() => handleBuyCredits("starter-pack")}
                   disabled={loadingProductId !== null}
                 >
@@ -272,9 +272,9 @@ export default function Pricing() {
                 </Flex>
 
                 <Button
-                  variant="outline"
+                  variant="soft"
                   size="3"
-                  className="w-full cursor-pointer mt-4"
+                  className="w-full mt-4 border-brand-pink/10! border! text-brand-pink! bg-brand-pink/10! hover:bg-brand-pink/8! cursor-pointer!"
                   onClick={() => handleBuyCredits("pro-pack")}
                   disabled={loadingProductId !== null}
                 >
