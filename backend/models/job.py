@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, Literal
-from google.genai.types import GenerateVideosOperation
+from typing import Optional, Literal, TypedDict
 
 @dataclass
 class VideoGenerationInput:
@@ -26,10 +25,9 @@ class JobStatus:
     error: Optional[str] = None
     metadata: Optional[dict] = None
 
-@dataclass
-class VideoJob:
+class VideoJob(TypedDict):
+    """Type hint for video job stored in Redis"""
     job_id: str
-    request: VideoJobRequest
-    job_start_time: datetime
-    operation: GenerateVideosOperation
-    metadata: Optional[dict] = None
+    operation_name: str
+    job_start_time: str  # ISO format datetime string
+    metadata: dict

@@ -16,15 +16,11 @@ class JobService:
         self.vertex_service = vertex_service
         self.redis_client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=False)
 
-    def _serialize(self, data: dict | VideoJob) -> bytes:
+    def _serialize(self, data: dict) -> bytes:
         """Serialize + compress any data to bytes for Redis storage"""
-        pickled = pickle.dumps(data)
-        print(f"Serialized data size: {len(pickled)} bytes")
-        compressed = lzma.compress(pickled)
-        print(f"Compressed data size: {len(compressed)} bytes")
-        return compressed
+        return lzma.compress(pickle.dumps(data))
     
-    def _deserialize(self, data: bytes) -> Optional[dict | VideoJob]:
+    def _deserialize(self, data: bytes) -> Optional[dict]:
         """Deserialize + decompress bytes from Redis storage"""
         if not data:
             return None

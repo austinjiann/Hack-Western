@@ -93,7 +93,7 @@ class Gemini(APIController):
                     return json({"error": "You don't have enough credits. Please purchase more credits to continue."}, status=402)
                 return json({"error": "Transaction failed"}, status=500)
 
-            prompt = "Improve the attached image. Do not deviate from the original art style too much, simply understand the artist's idea and enhance it a bit."
+            prompt = "Improve the attached image and fill in any missing details (There may be annotations and stuff but don't remove them or follow them, treat them like they dont exist unless they explicitly say to do so). Do not deviate from the original art style too much, simply understand the artist's idea and enhance it a bit."
 
             res = await self.vertex_service.generate_image_content(
                 prompt=prompt,
