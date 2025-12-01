@@ -7,7 +7,7 @@ from utils.env import settings
 import uuid
 import redis
 import pickle
-import blosc
+import lzma
 import asyncio
 import traceback
 
@@ -18,13 +18,17 @@ class JobService:
 
     def _serialize(self, data: dict | VideoJob) -> bytes:
         """Serialize + compress any data to bytes for Redis storage"""
-        return blosc.compress(pickle.dumps(data))
+        pickled = pickle.dumps(data)
+        print(f"Serialized data size: {len(pickled)} bytes")
+        compressed = lzma.compress(pickled)
+        print(f"Compressed data size: {len(compressed)} bytes")
+        return compressed
     
     def _deserialize(self, data: bytes) -> Optional[dict | VideoJob]:
         """Deserialize + decompress bytes from Redis storage"""
         if not data:
             return None
-        return pickle.loads(blosc.decompress(data))
+        return pickle.loads(lzma.decompress(data))
 
     async def create_video_job(self, request: VideoJobRequest) -> str:
         """Create a video job and return job_id immediately, processing happens in background"""
@@ -77,15 +81,15 @@ class JobService:
                 request.duration_seconds
             )
             
-            job = VideoJob(
-                job_id=job_id,
-                operation=operation,
-                request=request,
-                job_start_time=datetime.now(), # goes against naming here, this is actually end time of the job
-                metadata={
+            # Store only the operation name (string) instead of full operation object to save space
+            job = {
+                "job_id": job_id,
+                "operation_name": operation.name,
+                "job_start_time": datetime.now().isoformat(),
+                "metadata": {
                     "annotation_description": annotation_description
                 }
-            )
+            }
             
             self.redis_client.delete(f"job:{job_id}:pending")
             self.redis_client.setex(f"job:{job_id}", 300, self._serialize(job))
@@ -134,14 +138,15 @@ class JobService:
 
         job = self._deserialize(job_data)
 
-        result = await self.vertex_service.get_video_status(job.operation)
+        # Use operation_name instead of full operation object
+        result = await self.vertex_service.get_video_status_by_name(job["operation_name"])
 
         ret = JobStatus(
             status=result.status,
-            job_start_time=job.job_start_time,
+            job_start_time=datetime.fromisoformat(job["job_start_time"]),
             job_end_time=datetime.now() if result.status == "done" else None,
             video_url=result.video_url.replace("gs://", "https://storage.googleapis.com/") if result.video_url else None,
-            metadata=job.metadata
+            metadata=job.get("metadata")
         )
 
         if result.status == "done":

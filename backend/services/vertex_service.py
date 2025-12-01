@@ -57,6 +57,8 @@ class VertexService:
                 candidate_count=1,
             ),
         )
+        if not response.candidates or not response.candidates[0].content.parts:
+            raise Exception(str(response))
         return response.candidates[0].content.parts[0].inline_data.data
     
     async def get_video_status(self, operation: GenerateVideosOperation) -> JobStatus:
@@ -67,7 +69,9 @@ class VertexService:
     
     async def get_video_status_by_name(self, operation_name: str) -> JobStatus:
         """Get video status by operation name (avoids serialization)"""
-        operation = self.client.operations.get(operation_name)
+        # Create a minimal operation object with just the name since get() expects an operation object
+        operation = GenerateVideosOperation(name=operation_name)
+        operation = self.client.operations.get(operation)
         if operation.done and operation.result and operation.result.generated_videos:
             return JobStatus(status="done", job_start_time=None, video_url=operation.result.generated_videos[0].video.uri)
         return JobStatus(status="waiting", job_start_time=None, video_url=None)
