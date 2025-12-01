@@ -1,139 +1,88 @@
-# FlowBoard <img src="/frontend/public/logo.png" style="height: 30px">
+# FlowBoard
+
+> **Direct Your Video Frame by Frame**
 
 https://github.com/user-attachments/assets/bd51f5c9-d22b-4207-812f-29e0d95ed803
 
-**Direct Your Video Frame by Frame**
+AI-powered video storyboarding that transforms sketches into context-aware video clips. Draw, prompt, generate—infinitely.
 
-FlowBoard is an AI-powered video storyboard creation tool that transforms your rough sketches and instructions into context-aware video clips. Create storyboards by drawing directly on images, and watch as FlowBoard generates seamless video sequences that extend infinitely.
+---
 
-## Features
+## ✨ Features
 
-- **Interactive Canvas**: Draw instructions directly on your starting images using Tldraw's powerful drawing tools
-- **AI Video Generation**: Transform your sketches into video clips using Google Vertex AI
-- **Frame-by-Frame Workflow**: Create sequential video frames connected by arrows, building your story step by step
-- **Image Enhancement**: Improve frames using AI-powered image enhancement
-- **Video Merging**: Combine multiple generated video clips into a single seamless video
-- **Custom Frames**: Create aspect-ratio locked frames (16:9) for consistent video output
-- **Real-time Preview**: See your video generation progress in real-time
+| Feature | Description |
+|---------|-------------|
+| 🎨 **Interactive Canvas** | Draw instructions directly on frames using Tldraw |
+| 🤖 **AI Video Generation** | Powered by Google Vertex AI (Veo 3.1 & Gemini 2.5) |
+| 🔗 **Frame-by-Frame Workflow** | Sequential frames connected by arrows build your story |
+| ⚡ **Image Enhancement** | AI-powered frame improvement on demand |
+| 🎬 **Video Merging** | Combine clips into seamless sequences |
 
-## Usage
+---
 
-1. **Create a Frame**: Start with a default 16:9 frame on the canvas
-2. **Draw Instructions**: Use the drawing tools to sketch your video instructions directly on the frame
-3. **Add Prompt**: Type a description of what you want in the text box below the frame
-4. **Generate Video**: Click the sparkle icon (✨) to generate the next frame
-5. **Continue the Story**: Each generated frame becomes the starting point for the next, creating an infinite video sequence
-6. **Merge Videos**: Once you have multiple video clips, use the "Merge Videos" button to combine them into one seamless video
+## 🚀 Local Setup
 
+### Prerequisites
+- Python 3.11+ & Node.js 18+
+- Redis (local or hosted)
+- Google Cloud Project (Vertex AI enabled)
+- Supabase project
 
-## Local Setup
-
-### 1. Prerequisites
-
-- Python 3.11+
-- Node.js 18+
-- Redis (for job queue management)
-- Google Cloud Project with Vertex AI enabled
-- Supabase project (for authentication and database)
-
-### 2. Backend Setup
-
-Navigate to the backend directory:
+### Backend Setup
 
 ```bash
 cd backend
-```
-
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the `backend` directory with the following variables:
-
+**`.env` Configuration:**
 ```env
-# Google Cloud / Vertex AI Configuration
+# Google Cloud / Vertex AI
 GOOGLE_CLOUD_PROJECT=your-gcp-project-id
 GOOGLE_CLOUD_LOCATION=us-central1
 GOOGLE_GENAI_USE_VERTEXAI=true
 GOOGLE_CLOUD_BUCKET_NAME=your-gcs-bucket-name
 
-# Redis Configuration (for job queue)
-REDIS_URL=redis://default:your-password@localhost:6379
+# Redis (job queue)
+REDIS_URL=redis://default:password@localhost:6379
 
-# Supabase Configuration
+# Supabase (auth & database)
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SECRET_KEY=your-supabase-secret-key
+SUPABASE_SECRET_KEY=your-service-role-key
 ```
 
-**Google Cloud Setup**:
-- Enable Vertex AI API in your Google Cloud project
-- Create a GCS bucket for video storage
-- Set up authentication using one of:
-  - `GOOGLE_APPLICATION_CREDENTIALS` environment variable pointing to service account JSON
-  - `gcloud auth application-default login` for local development
+**Setup Checklist:**
+- ✅ Enable Vertex AI API + create GCS bucket
+- ✅ Auth: `GOOGLE_APPLICATION_CREDENTIALS` or `gcloud auth application-default login`
+- ✅ Supabase: Create `users` table with `credits` column (see `backend/scripts/db`)
+- ✅ Enable auth providers (Google/GitHub) in Supabase dashboard
 
-**Redis Setup**:
-- Install Redis locally or use a hosted service (Upstash, Redis Cloud, etc.)
-- Update `REDIS_URL` with your connection string
-
-**Supabase Setup**:
-- Create a Supabase project at [supabase.com](https://supabase.com)
-- Get your project URL and service role key from Project Settings → API
-- Create a `users` table with a `credits` column (integer) for credit tracking
-- See `backend/scripts/db` for Postgresql functions and schemas
-- Enable authentication providers (Google, GitHub, etc.) in Authentication settings
-
-### 3. Frontend Setup
-
-Navigate to the frontend directory:
+### Frontend Setup
 
 ```bash
 cd frontend
-```
-
-Install dependencies:
-
-```bash
 npm install
-# or
-yarn install
 ```
 
-Create a `.env` file in the `frontend` directory:
-
+**`.env` Configuration:**
 ```env
-# Backend API URL
 VITE_BACKEND_URL=http://localhost:8000
-
-# Supabase Configuration (for authentication)
 VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLIC_KEY=your-supabase-anon-public-key
+VITE_SUPABASE_PUBLIC_KEY=your-anon-public-key  # NOT service role key
 ```
 
-**Note**: Use the anon/public key for the frontend (not the service role key)
+### Run
 
-### 4. Running the Application
+**Backend:** `python main.py` (→ http://localhost:8000)  
+**Frontend:** `npm run dev` (→ http://localhost:5173)
 
-#### Start the Backend Server
+---
 
-From the `backend` directory:
+## 📖 Usage
 
-```bash
-python main.py
-```
-
-The backend will run on `http://localhost:8000`
-
-#### Start the Frontend Development Server
-
-From the `frontend` directory:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open your browser to start using FlowBoard!
+1. **Create Frame** → Start with 16:9 frame
+2. **Draw/Annotate** → Sketch motion instructions
+3. **Add Prompt** → Describe your vision
+4. **Generate** → Click ✨ to create next frame
+5. **Chain Frames** → Link frames with arrows for sequences
+6. **Merge Videos** → Combine clips into final output
