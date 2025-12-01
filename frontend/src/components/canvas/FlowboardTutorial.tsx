@@ -17,7 +17,7 @@ export const TutorialSlideshow: React.FC<TutorialSlideshowProps> = ({
       title: "Welcome to Flowboard",
       description:
         "Create beautiful animations in minutes on our canvas",
-      videoUrl: "/demo/demo.mp4",
+      videoUrl: "/demo/tutorial0.mp4",
       tip: "Every user starts with a 50 credit free trial!",
     },
     {
@@ -31,28 +31,28 @@ export const TutorialSlideshow: React.FC<TutorialSlideshowProps> = ({
       title: "Or draw from scratch",
       description:
         "Create your own world—use our tools to draw sketches",
-      videoUrl: "/demo/tutorial vid 2.mp4",
+      videoUrl: "/demo/tutorial2.mp4",
       tip: "Use the improve frame button to enhance sketches!",
     },
     {
       title: "Prompt and generate",
       description:
         "Craft a prompt and then generate the next frame",
-      videoUrl: "/demo/demo3.mp4",
+      videoUrl: "/demo/tutorial3.mp4",
       tip: "Make sure the prompt is accurate to what you want to animate!",
     },
     {
       title: "Create a whole story",
       description:
         "Continue iterating over the last frame of the previous frame—create a storyboard tree.",
-      videoUrl: "/demo/demo4.mp4",
+      videoUrl: "/demo/tutorial4.mp4",
       tip: "Our global context handles the transitions!",
     },
     {
       title: "Merge and export",
       description:
         "You're all set! Select a frame and merge",
-      videoUrl: "/demo/demo5.mp4",
+      videoUrl: "/demo/tutorial5.mp4",
       tip: "The algorithm merges the whole story—from beginning to the selected frame!",
     },
   ];
