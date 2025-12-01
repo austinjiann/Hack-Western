@@ -1,4 +1,4 @@
-# FlowBoard
+# FlowBoard <img src="/frontend/public/logo.png" style="height: 30px">
 
 > **Direct Your Video Frame by Frame**
 
