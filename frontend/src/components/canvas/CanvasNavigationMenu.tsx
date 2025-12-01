@@ -1,12 +1,19 @@
 import React, { useState } from "react";
-import { Menu, Home, LayoutDashboard, LogIn, BookOpen } from "lucide-react";
+import { Menu, Home, LayoutDashboard, LogIn, BookOpen, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TutorialSlideshow } from "./FlowboardTutorial";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const CanvasNavigationMenu: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const navigate = useNavigate();
+  const {user, signOut} = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   const menuItems = [
     {
@@ -34,12 +41,9 @@ export const CanvasNavigationMenu: React.FC = () => {
       },
     },
     {
-      label: "Login",
-      icon: LogIn,
-      onClick: () => {
-        navigate("/login");
-        setIsMenuOpen(false);
-      },
+      label: user ? "Logout" : "Login",
+      icon: user ? LogOut : LogIn,
+      onClick: user ? handleLogout : () => navigate("/login"),
     },
   ];
 

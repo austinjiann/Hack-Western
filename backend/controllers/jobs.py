@@ -142,7 +142,7 @@ class Jobs(APIController):
         Merges multiple videos from URLs into a single video.
         Input: JSON body with "video_urls" array (ordered from root to end frame)
         Return: merged video URL
-        """
+        """     
         user_id = request.scope.get("user_id") or self.supabase_service.get_user_id_from_request(request)
         if not user_id:
             return json({"error": "Unauthorized"}, status=401)

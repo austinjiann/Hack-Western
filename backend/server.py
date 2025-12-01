@@ -1,3 +1,4 @@
+import logging
 from blacksheep import Application, Request, Request
 from services.storage_service import StorageService
 from services.vertex_service import VertexService
