@@ -126,7 +126,7 @@ function Dashboard() {
 
               {/* Transaction Log */}
               <div className="bg-white/60 backdrop-blur-md border border-gray-200/50 rounded-2xl p-8 shadow-xl shadow-black/5">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                   <div className="flex items-center gap-3">
                     <div className="p-3 bg-brand-pink/10 rounded-xl">
                       <Receipt className="w-6 h-6 text-brand-pink" />
@@ -135,7 +135,7 @@ function Dashboard() {
                       Transaction Log
                     </h2>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 self-start md:self-auto">
                     <span className="text-sm text-gray-500">Show:</span>
                     <DropdownMenu.Root>
                       <DropdownMenu.Trigger>
@@ -173,7 +173,7 @@ function Dashboard() {
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full whitespace-nowrap">
                       <thead>
                         <tr className="border-b border-gray-200">
                           <th className="text-left py-3 px-4 font-semibold text-gray-700">
@@ -197,7 +197,7 @@ function Dashboard() {
                             className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
                           >
                             <td className="py-3 px-4 text-gray-600">
-                              {new Date(transaction.created_at).toUTCString()}
+                              {new Date(transaction.created_at).toLocaleString()}
                             </td>
                             <td className="py-3 px-4 text-gray-900">
                               {transaction.transaction_type}
