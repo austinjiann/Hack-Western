@@ -16,7 +16,7 @@ import logoImage from "../../assets/logo.png";
 const navItems: NavItem[] = [];
 
 const Navbar: React.FC = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
 
@@ -38,37 +38,83 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      // Calculate scroll progress from 0 to 1
+      // Start shrinking after 50px, fully shrunk at 275px
+      const scrollStart = 50;
+      const scrollEnd = 500;
+      const scrollY = window.scrollY;
+      
+      if (scrollY < scrollStart) {
+        setScrollProgress(0);
+      } else if (scrollY > scrollEnd) {
+        setScrollProgress(1);
+      } else {
+        // Linear interpolation between scrollStart and scrollEnd
+        setScrollProgress((scrollY - scrollStart) / (scrollEnd - scrollStart));
+      }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Interpolate values based on scroll progress
+  const interpolate = (start: number, end: number, progress: number) => {
+    return start + (end - start) * progress;
+  };
+
+  // Calculate interpolated values
+  const top = interpolate(0, 16, scrollProgress); // 0px to 16px (top-4)
+  const width = interpolate(100, 90, scrollProgress); // 100% to 90%
+  const maxWidthPx = interpolate(10000, 672, scrollProgress); // Large value (effectively no max) to 672px (max-w-2xl)
+  const paddingY = interpolate(24, 12, scrollProgress); // py-6 (24px) to py-3 (12px)
+  const paddingX = interpolate(32, 24, scrollProgress); // px-8 (32px) to px-6 (24px)
+  const borderRadius = interpolate(0, 9999, scrollProgress); // 0 to full rounded
+  const bgOpacity = interpolate(0, 85, scrollProgress); // 0% to 85%
+  const borderOpacity = interpolate(0, 50, scrollProgress); // 0% to 50%
+  const shadowOpacity = interpolate(0, 10, scrollProgress); // 0% to 10%
+  const backdropBlur = scrollProgress > 0 ? 'blur-md' : 'blur-none';
+
   return (
     <div className="w-full flex justify-center">
       <nav
-        className={`fixed z-50 transition-all duration-900 ease-out will-change-transform ${
-          isScrolled
-            ? "top-4 w-[90%] max-w-2xl rounded-full bg-white/85 backdrop-blur-md border border-gray-200/50 shadow-xl shadow-black/10 py-3 px-6"
-            : "top-0 w-full bg-white/0 backdrop-blur-none border-b border-transparent py-6 px-8"
-        }`}
+        className="fixed z-50 transition-all duration-300 ease-out will-change-transform"
+        style={{
+          top: `${top}px`,
+          width: `${width}%`,
+          maxWidth: `${maxWidthPx}px`,
+          paddingTop: `${paddingY}px`,
+          paddingBottom: `${paddingY}px`,
+          paddingLeft: `${paddingX}px`,
+          paddingRight: `${paddingX}px`,
+          borderRadius: `${borderRadius}px`,
+          backgroundColor: `rgba(255, 255, 255, ${bgOpacity / 100})`,
+          backdropFilter: backdropBlur,
+          border: `1px solid rgba(229, 231, 235, ${borderOpacity / 100})`,
+          boxShadow: `0 20px 25px -5px rgba(0, 0, 0, ${shadowOpacity / 100}), 0 10px 10px -5px rgba(0, 0, 0, ${shadowOpacity / 100})`,
+        }}
       >
         <div className="flex items-center justify-between w-full">
           <Link
             to="/"
-            className={`flex items-center group cursor-pointer ${
-              isScrolled ? "gap-1" : "gap-2"
-            }`}
+            className="flex items-center group cursor-pointer transition-all duration-300"
+            style={{
+              gap: `${interpolate(8, 4, scrollProgress)}px`
+            }}
           >
             <img
               src={logoImage}
               alt="FlowBoard Logo"
-              className={`transition-all ${isScrolled ? "h-6 w-6" : "h-9 w-9"}`}
+              className="transition-all duration-300"
+              style={{
+                height: `${interpolate(36, 24, scrollProgress)}px`,
+                width: `${interpolate(36, 24, scrollProgress)}px`
+              }}
             />
             <span
-              className={`font-bold tracking-tight text-gray-900 transition-all ${
-                isScrolled ? "text-lg" : "text-2xl"
-              }`}
+              className="font-bold tracking-tight text-gray-900 transition-all duration-300"
+              style={{
+                fontSize: `${interpolate(24, 18, scrollProgress)}px`
+              }}
             >
               <span className="font-ananda p-1">F</span>low{" "}
               <span className="font-ananda">B</span>oard
@@ -92,36 +138,71 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={() => navigate("/dashboard")}
-              className={`
-              flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80
-              ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
-            `}
+              className="flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80"
+              style={{
+                paddingLeft: `${interpolate(16, 12, scrollProgress)}px`,
+                paddingRight: `${interpolate(16, 12, scrollProgress)}px`,
+                paddingTop: `${interpolate(8, 6, scrollProgress)}px`,
+                paddingBottom: `${interpolate(8, 6, scrollProgress)}px`,
+                fontSize: `${interpolate(14, 12, scrollProgress)}px`
+              }}
             >
               <LayoutDashboard
-                className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`}
+                className="transition-all duration-300"
+                style={{
+                  width: `${interpolate(16, 12, scrollProgress)}px`,
+                  height: `${interpolate(16, 12, scrollProgress)}px`
+                }}
               />
               <span className="relative z-10">Dashboard</span>
             </button>
             {user ? (
               <>
                 {/* Profile Button */}
-                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 border border-gray-200/50 px-3 py-1.5">
+                <div 
+                  className="flex items-center gap-2 bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 border border-gray-200/50"
+                  style={{
+                    paddingLeft: `${interpolate(12, 12, scrollProgress)}px`,
+                    paddingRight: `${interpolate(12, 12, scrollProgress)}px`,
+                    paddingTop: `${interpolate(8, 6, scrollProgress)}px`,
+                    paddingBottom: `${interpolate(8, 6, scrollProgress)}px`
+                  }}
+                >
                   <UserIcon
-                    className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`}
+                    className="transition-all duration-300"
+                    style={{
+                      width: `${interpolate(16, 12, scrollProgress)}px`,
+                      height: `${interpolate(16, 12, scrollProgress)}px`
+                    }}
                   />
-                  <span className={`${isScrolled ? "text-xs" : "text-sm"}`}>
+                  <span 
+                    className="transition-all duration-300"
+                    style={{
+                      fontSize: `${interpolate(14, 12, scrollProgress)}px`
+                    }}
+                  >
                     {getUserName()}
                   </span>
                 </div>
                 {/* Logout Button */}
                 <button
                   onClick={handleLogout}
-                  className={`
-                  flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer
-                  ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
-                `}
+                  className="flex items-center gap-2 relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer"
+                  style={{
+                    paddingLeft: `${interpolate(16, 12, scrollProgress)}px`,
+                    paddingRight: `${interpolate(16, 12, scrollProgress)}px`,
+                    paddingTop: `${interpolate(8, 6, scrollProgress)}px`,
+                    paddingBottom: `${interpolate(8, 6, scrollProgress)}px`,
+                    fontSize: `${interpolate(14, 12, scrollProgress)}px`
+                  }}
                 >
-                  <LogOut className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
+                  <LogOut 
+                    className="transition-all duration-300"
+                    style={{
+                      width: `${interpolate(16, 12, scrollProgress)}px`,
+                      height: `${interpolate(16, 12, scrollProgress)}px`
+                    }}
+                  />
                   <span className="relative z-10">Logout</span>
                 </button>
               </>
@@ -129,20 +210,34 @@ const Navbar: React.FC = () => {
               <>
                 <button
                   onClick={() => navigate("/login")}
-                  className={`
-                  flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80
-                  ${isScrolled ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}
-                `}
+                  className="flex items-center gap-2 relative overflow-hidden group bg-white/60 backdrop-blur-md text-gray-700 font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/5 hover:shadow-black/10 border border-gray-200/50 cursor-pointer hover:bg-white/80"
+                  style={{
+                    paddingLeft: `${interpolate(16, 12, scrollProgress)}px`,
+                    paddingRight: `${interpolate(16, 12, scrollProgress)}px`,
+                    paddingTop: `${interpolate(8, 6, scrollProgress)}px`,
+                    paddingBottom: `${interpolate(8, 6, scrollProgress)}px`,
+                    fontSize: `${interpolate(14, 12, scrollProgress)}px`
+                  }}
                 >
-                  <LogIn className={`${isScrolled ? "w-3 h-3" : "w-4 h-4"}`} />
+                  <LogIn 
+                    className="transition-all duration-300"
+                    style={{
+                      width: `${interpolate(16, 12, scrollProgress)}px`,
+                      height: `${interpolate(16, 12, scrollProgress)}px`
+                    }}
+                  />
                   <span className="relative z-10">Login</span>
                 </button>
                 <button
                   onClick={() => navigate("/app")}
-                  className={`
-                  relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer
-                  ${isScrolled ? "px-4 py-1.5 text-xs" : "px-6 py-2 text-sm"}
-                `}
+                  className="relative overflow-hidden group bg-black/80 backdrop-blur-md text-white font-semibold rounded-xl transition-all duration-300 shadow-lg shadow-black/10 hover:shadow-black/20 border border-white/10 cursor-pointer"
+                  style={{
+                    paddingLeft: `${interpolate(24, 16, scrollProgress)}px`,
+                    paddingRight: `${interpolate(24, 16, scrollProgress)}px`,
+                    paddingTop: `${interpolate(8, 6, scrollProgress)}px`,
+                    paddingBottom: `${interpolate(8, 6, scrollProgress)}px`,
+                    fontSize: `${interpolate(14, 12, scrollProgress)}px`
+                  }}
                 >
                   <span className="relative z-10">Get Started</span>
                   <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
